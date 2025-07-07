@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator COGS F&B v2.0</title>
+    <title>Kalkulator COGS F&B</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -38,13 +38,54 @@
             </div>
         </div>
         <hr>
-        <p>Login berhasil! Konten aplikasi akan dibangun di sini.</p>
+
+        <div class="section" id="master-bahan-container">
+            <h2>Master Bahan Baku</h2>
+            <p>Masukkan data bahan sesuai kemasan yang kamu beli.</p>
+            <form id="master-bahan-form">
+                <div class="input-group">
+                    <div style="flex: 2;"><label for="bahan-nama">Nama Bahan</label><input type="text" id="bahan-nama" placeholder="cth: Gula Aren Cair" required></div>
+                    <div style="flex: 1.5;"><label for="harga-beli-kemasan">Harga Beli Kemasan (Rp)</label><input type="number" id="harga-beli-kemasan" placeholder="cth: 50000" required></div>
+                </div>
+                <div class="input-group">
+                    <div style="flex: 1;"><label for="isi-kemasan">Isi Kemasan</label><input type="number" id="isi-kemasan" placeholder="cth: 1000" required></div>
+                    <div style="flex: 1;"><label for="satuan-kemasan">Satuan Kemasan</label><input type="text" id="satuan-kemasan" placeholder="cth: ml, gram" required></div>
+                </div>
+                <button type="submit">Simpan Bahan</button>
+            </form>
+            <table id="master-bahan-table">
+                <thead><tr><th>Nama Bahan</th><th>Info Pembelian</th><th>Harga/Satuan Dasar</th><th>Aksi</th></tr></thead>
+                <tbody id="master-bahan-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="section" id="kalkulator-container">
+            <h2>Kalkulator HPP Produk</h2>
+            <p>Fitur ini akan dibangun selanjutnya.</p>
+        </div>
     </div>
 </div>
 
-<!-- Modal Edit (kita biarkan saja di sini, tidak akan dipakai sementara) -->
+<!-- Modal Edit -->
 <div id="edit-modal" class="modal-overlay hidden">
-    <!-- ... -->
+    <div class="modal-content">
+        <h2>Edit Bahan Baku</h2>
+        <form id="edit-bahan-form">
+            <input type="hidden" id="edit-bahan-id">
+            <div class="input-group">
+                <div style="flex: 2;"><label for="edit-bahan-nama">Nama Bahan</label><input type="text" id="edit-bahan-nama" required></div>
+                <div style="flex: 1.5;"><label for="edit-harga-beli-kemasan">Harga Beli Kemasan (Rp)</label><input type="number" id="edit-harga-beli-kemasan" required></div>
+            </div>
+            <div class="input-group">
+                <div style="flex: 1;"><label for="edit-isi-kemasan">Isi Kemasan</label><input type="number" id="edit-isi-kemasan" required></div>
+                <div style="flex: 1;"><label for="edit-satuan-kemasan">Satuan Kemasan</label><input type="text" id="edit-satuan-kemasan" required></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="cancel-edit-btn">Batal</button>
+                <button type="submit">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Script Tags di Posisi Paling Bawah -->
