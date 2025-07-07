@@ -1,19 +1,19 @@
 /* === FONT MODERN DARI GOOGLE FONTS === */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* === CSS VARIABLES UNTUK TEMA WARNA (DARK MODE) === */
+/* === CSS VARIABLES UNTUK TEMA WARNA (LIGHT MODE) === */
 :root {
     --primary-color: #14b8a6; /* Tosca Segar */
     --primary-hover: #0d9488;
-    --background-color: #111827; /* Abu-abu gelap */
-    --surface-color: #1f2937;   /* Warna kartu/panel */
-    --border-color: #374151;
-    --text-color: #f9fafb;      /* Putih keabuan */
-    --text-secondary: #9ca3af;
-    --danger-color: #ef4444;
-    --warning-color: #f59e0b;
-    --success-color: #22c55e;
-    --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    --background-color: #f8f9fa; /* Latar Belakang Cerah */
+    --surface-color: #ffffff;   /* Warna kartu/panel Putih */
+    --border-color: #dee2e6;
+    --text-color: #212529;      /* Teks Gelap */
+    --text-secondary: #6c757d;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --success-color: #28a745;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
 /* === GENERAL STYLING === */
@@ -61,6 +61,7 @@ hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
     max-width: 450px;
     margin: auto;
     border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
 }
 
 /* === FORM & INPUT STYLING === */
@@ -84,7 +85,7 @@ select.bahan-resep-dropdown {
     border-radius: 8px;
     box-sizing: border-box;
     font-size: 1rem;
-    background-color: #374151; /* Warna input lebih gelap */
+    background-color: #ffffff; /* Latar belakang input putih */
     color: var(--text-color);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -109,35 +110,35 @@ button {
 button:hover { transform: translateY(-2px); }
 button[type="submit"] { background-color: var(--primary-color); color: white; }
 button[type="submit"]:hover { background-color: var(--primary-hover); }
-.button-secondary { background-color: var(--text-secondary); color: var(--background-color); }
-.button-secondary:hover { background-color: #f9fafb; }
+.button-secondary { background-color: var(--text-secondary); color: white; }
+.button-secondary:hover { background-color: #5a6268; }
 
 
 /* === APP LAYOUT === */
 .hidden { display: none !important; }
-.app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: var(--surface-color); border-radius: 12px; margin-bottom: 20px; }
+.app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: var(--surface-color); border-radius: 12px; margin-bottom: 20px; box-shadow: var(--shadow); }
 .main-layout { display: flex; flex-direction: column; gap: 30px; }
-.section { background-color: var(--surface-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
+.section { background-color: var(--surface-color); padding: 25px; border-radius: 12px; border: 1px solid #e9ecef; box-shadow: var(--shadow); }
 
 /* === TABLE STYLING === */
 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
 th, td { padding: 12px 10px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); }
-thead { color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; }
+thead { color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; background-color: #f8f9fa; }
 td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; }
 .button-delete, #logout-button { background-color: var(--danger-color); color: white; }
 .button-edit { background-color: var(--warning-color); color: var(--dark-color); }
 
 /* === KALKULATOR HPP STYLING === */
 #add-resep-item-btn { width: auto; padding: 10px 20px; background-color: var(--primary-color); margin-top: 15px; }
-.hpp-summary { background-color: var(--background-color); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; }
+.hpp-summary { background-color: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; }
 .hpp-summary h3 { margin: 0; font-size: 1.2rem; }
 #hpp-form button[type="submit"] { background-color: var(--success-color); }
 
 /* === MODAL STYLING === */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
 .modal-content { background: var(--surface-color); padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid var(--border-color); }
 .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-#cancel-edit-btn { background-color: var(--text-secondary); color: var(--background-color); }
+#cancel-edit-btn { background-color: var(--text-secondary); color: white; }
 
 /* === DESKTOP & TABLET STYLES (MEDIA QUERIES) === */
 @media (min-width: 1024px) {
