@@ -9,7 +9,6 @@
 <body>
 
 <div class="container">
-    <!-- Bagian Autentikasi -->
     <div id="auth-container">
         <h1>Selamat Datang!</h1>
         <p>Silakan masuk atau daftar untuk mulai menghitung HPP produk Anda.</p>
@@ -28,7 +27,6 @@
         </form>
     </div>
 
-    <!-- Bagian Aplikasi Utama -->
     <div id="app-container" class="hidden">
         <div class="app-header">
             <h1>Kalkulator COGS F&B</h1>
@@ -61,12 +59,41 @@
 
         <div class="section" id="kalkulator-container">
             <h2>Kalkulator HPP Produk</h2>
-            <p>Fitur ini akan dibangun selanjutnya.</p>
+            <p>Buat resep dan hitung HPP produk jualanmu di sini.</p>
+            
+            <form id="hpp-form">
+                <label for="produk-nama">Nama Produk Baru</label>
+                <input type="text" id="produk-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
+
+                <h3>Bahan untuk Resep Ini</h3>
+                <table id="resep-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Pilih Bahan Baku</th>
+                            <th style="width: 15%;">Jumlah</th>
+                            <th style="width: 15%;">Satuan</th>
+                            <th style="width: 20%;">Biaya Bahan (Rp)</th>
+                            <th style="width: 10%;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resep-table-body">
+                        </tbody>
+                </table>
+                <button type="button" id="add-resep-item-btn" style="margin-top: 15px;">+ Tambah Bahan</button>
+                
+                <hr>
+
+                <div class="hpp-summary">
+                    <h3>Total HPP (Modal): <span id="total-hpp-display">Rp 0,00</span></h3>
+                </div>
+
+                <button type="submit" style="margin-top: 15px; background-color: #27ae60;">Simpan Produk & Resep</button>
+            </form>
         </div>
+
     </div>
 </div>
 
-<!-- Modal Edit -->
 <div id="edit-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <h2>Edit Bahan Baku</h2>
@@ -88,7 +115,6 @@
     </div>
 </div>
 
-<!-- Script Tags di Posisi Paling Bawah -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 
