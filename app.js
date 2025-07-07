@@ -1,5 +1,3 @@
-// File: app.js (VERSI DENGAN KALKULATOR HPP AKTIF - LENGKAP)
-
 document.addEventListener('DOMContentLoaded', () => {
     // === KONFIGURASI SUPABASE ===
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
@@ -25,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addResepItemBtn = document.getElementById('add-resep-item-btn');
     const resepTableBody = document.getElementById('resep-table-body');
     const totalHppDisplay = document.getElementById('total-hpp-display');
+    const hppForm = document.getElementById('hpp-form');
+    const produkTableBody = document.getElementById('produk-table-body');
 
     // === FUNGSI UTAMA UNTUK MENGATUR TAMPILAN ===
     const updateUI = (user) => {
@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             appContainer.classList.remove('hidden');
             userEmailDisplay.textContent = user.email;
             loadBahanBaku();
+            loadProduk();
         } else {
             currentUser = null;
             authContainer.classList.remove('hidden');
@@ -50,10 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadBahanBaku = async () => {
         const { data, error } = await supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
-        if (error) { console.error('Error mengambil data:', error); return; }
-
+        if (error) { console.error('Error mengambil data bahan baku:', error); return; }
         masterBahanList = data;
-        
         masterBahanTableBody.innerHTML = '';
         data.forEach(bahan => {
             const hargaPerSatuanDasar = (bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
@@ -78,16 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const harga_beli_kemasan = document.getElementById('harga-beli-kemasan').value;
         const isi_kemasan = document.getElementById('isi-kemasan').value;
         const satuan_kemasan = document.getElementById('satuan-kemasan').value;
-
         const { error } = await supabaseClient.from('bahan_baku').insert([{ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan, user_id: currentUser.id }]);
-        if (error) { console.error('Error menyimpan data:', error); alert('Gagal menyimpan bahan!'); } 
+        if (error) { console.error('Error menyimpan bahan baku:', error); alert('Gagal menyimpan bahan!'); } 
         else { masterBahanForm.reset(); loadBahanBaku(); }
     };
 
     const hapusBahanBaku = async (id) => {
         if (confirm("Yakin mau hapus bahan ini?")) {
             const { error } = await supabaseClient.from('bahan_baku').delete().eq('id', id);
-            if (error) { console.error('Error menghapus data:', error); alert('Gagal menghapus bahan!'); } 
+            if (error) { console.error('Error menghapus bahan baku:', error); alert('Gagal menghapus bahan!'); } 
             else { loadBahanBaku(); }
         }
     };
@@ -95,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const openEditModal = async (id) => {
         const { data, error } = await supabaseClient.from('bahan_baku').select('*').eq('id', id).single();
         if (error) { console.error('Error mengambil data untuk diedit:', error); return; }
-
         document.getElementById('edit-bahan-id').value = data.id;
         document.getElementById('edit-bahan-nama').value = data.nama;
         document.getElementById('edit-harga-beli-kemasan').value = data.harga_beli_kemasan;
@@ -111,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const harga_beli_kemasan = document.getElementById('edit-harga-beli-kemasan').value;
         const isi_kemasan = document.getElementById('edit-isi-kemasan').value;
         const satuan_kemasan = document.getElementById('edit-satuan-kemasan').value;
-
         const { error } = await supabaseClient.from('bahan_baku').update({ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan }).eq('id', id);
         if (error) { console.error('Error menyimpan perubahan:', error); alert('Gagal menyimpan perubahan!'); } 
         else { editModal.classList.add('hidden'); loadBahanBaku(); }
@@ -125,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         row.innerHTML = `
             <td><select class="bahan-resep-dropdown">${options}</select></td>
-            <td><input type="number" class="jumlah-resep" value="0" min="0" style="width: 80px;"></td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" min="0"></td>
             <td class="satuan-resep-display">-</td>
             <td class="biaya-resep-display">Rp 0,00</td>
             <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
@@ -136,17 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateBiayaResep = () => {
         let totalHpp = 0;
         const semuaBarisResep = resepTableBody.querySelectorAll('tr');
-
         semuaBarisResep.forEach(row => {
             const dropdown = row.querySelector('.bahan-resep-dropdown');
             const jumlahInput = row.querySelector('.jumlah-resep');
             const satuanDisplay = row.querySelector('.satuan-resep-display');
             const biayaDisplay = row.querySelector('.biaya-resep-display');
-
             const bahanId = dropdown.value;
             const jumlah = parseFloat(jumlahInput.value) || 0;
             const bahanTerpilih = masterBahanList.find(b => b.id === bahanId);
-
             if (bahanTerpilih && bahanTerpilih.isi_kemasan > 0) {
                 satuanDisplay.textContent = bahanTerpilih.satuan_kemasan;
                 const hargaPerSatuan = bahanTerpilih.harga_beli_kemasan / bahanTerpilih.isi_kemasan;
@@ -161,20 +154,64 @@ document.addEventListener('DOMContentLoaded', () => {
         totalHppDisplay.textContent = formatRupiah(totalHpp);
     };
 
+    const simpanProduk = async (event) => {
+        event.preventDefault();
+        if (!currentUser) { alert('Sesi tidak ditemukan.'); return; }
+        const namaProduk = document.getElementById('produk-nama').value;
+        if (!namaProduk) { alert('Nama produk tidak boleh kosong!'); return; }
+        const resepItems = [];
+        const semuaBarisResep = resepTableBody.querySelectorAll('tr');
+        semuaBarisResep.forEach(row => {
+            const bahanId = row.querySelector('.bahan-resep-dropdown').value;
+            const jumlah = parseFloat(row.querySelector('.jumlah-resep').value) || 0;
+            if (bahanId && jumlah > 0) {
+                resepItems.push({ bahan_id: bahanId, jumlah: jumlah });
+            }
+        });
+        if (resepItems.length === 0) { alert('Resep tidak boleh kosong!'); return; }
+        const { error } = await supabaseClient.from('produk').insert([{ nama_produk: namaProduk, resep: resepItems, jenis_produk: 'Produk Jadi', user_id: currentUser.id }]);
+        if (error) { console.error('Error menyimpan produk:', error); alert('Gagal menyimpan produk!'); } 
+        else {
+            alert('Produk berhasil disimpan!');
+            hppForm.reset();
+            resepTableBody.innerHTML = '';
+            totalHppDisplay.textContent = formatRupiah(0);
+            loadProduk();
+        }
+    };
+
+    const loadProduk = async () => {
+        const { data, error } = await supabaseClient.from('produk').select('*').order('created_at', { ascending: false });
+        if (error) { console.error('Error mengambil data produk:', error); return; }
+        produkTableBody.innerHTML = '';
+        data.forEach(produk => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${produk.nama_produk}</td>
+                <td>
+                    <button class="button-edit" data-id="${produk.id}">Edit</button>
+                    <button class="button-delete" data-id="${produk.id}">Hapus</button>
+                </td>
+            `;
+            produkTableBody.appendChild(row);
+        });
+    };
+
     // === EVENT LISTENERS ===
     if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); } }); }
     if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error login: ' + error.message); } }); }
     if (logoutButton) { logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); }); }
     if (masterBahanForm) { masterBahanForm.addEventListener('submit', simpanBahanBaku); }
     if (masterBahanTableBody) { masterBahanTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('button-delete')) { hapusBahanBaku(event.target.getAttribute('data-id')); } if (event.target.classList.contains('button-edit')) { openEditModal(event.target.getAttribute('data-id')); } }); }
-    if(editBahanForm) { editBahanForm.addEventListener('submit', simpanPerubahanBahan); }
-    if(cancelEditBtn) { cancelEditBtn.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
-    if(addResepItemBtn) { addResepItemBtn.addEventListener('click', tambahBahanKeResep); }
-    if(resepTableBody) {
+    if (editBahanForm) { editBahanForm.addEventListener('submit', simpanPerubahanBahan); }
+    if (cancelEditBtn) { cancelEditBtn.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
+    if (addResepItemBtn) { addResepItemBtn.addEventListener('click', tambahBahanKeResep); }
+    if (resepTableBody) {
         resepTableBody.addEventListener('change', (event) => { if (event.target.classList.contains('bahan-resep-dropdown')) { updateBiayaResep(); } });
         resepTableBody.addEventListener('input', (event) => { if (event.target.classList.contains('jumlah-resep')) { updateBiayaResep(); } });
         resepTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('hapus-resep-item')) { event.target.closest('tr').remove(); updateBiayaResep(); } });
     }
+    if (hppForm) { hppForm.addEventListener('submit', simpanProduk); }
 
     // === INISIALISASI APLIKASI ===
     const initApp = async () => {
