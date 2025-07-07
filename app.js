@@ -1,57 +1,131 @@
-// File: app.js (VERSI DEBUGGING SUPER DASAR)
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Event DOMContentLoaded terpicu. HTML sudah siap.");
+// File: app.js (VERSI FINAL - GABUNGAN STRUKTUR KUAT & FITUR LENGKAP)
 
-    try {
-        // === KONFIGURASI SUPABASE ===
-        const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("Supabase client berhasil dibuat.");
+// === KONFIGURASI SUPABASE ===
+const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // === DOM ELEMENTS ===
-        const authContainer = document.getElementById('auth-container');
-        const appContainer = document.getElementById('app-container');
-        console.log("Elemen authContainer:", authContainer);
-        console.log("Elemen appContainer:", appContainer);
+// === VARIABEL GLOBAL ===
+let currentUser = null;
 
-        // === FUNGSI UTAMA UNTUK MENGATUR TAMPILAN ===
-        const updateUI = (user) => {
-            console.log("Fungsi updateUI dipanggil. User:", user);
-            if (!authContainer || !appContainer) {
-                console.error("Salah satu container (auth/app) tidak ditemukan!");
-                return;
-            }
-            if (user) {
-                authContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-            } else {
-                authContainer.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-            }
-            console.log("UI berhasil di-update.");
-        };
+// === DOM ELEMENTS ===
+const authContainer = document.getElementById('auth-container');
+const appContainer = document.getElementById('app-container');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const logoutButton = document.getElementById('logout-button');
+const userEmailDisplay = document.getElementById('user-email-display');
+const masterBahanForm = document.getElementById('master-bahan-form');
+const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+const editModal = document.getElementById('edit-modal');
+const editBahanForm = document.getElementById('edit-bahan-form');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
 
-        // === INISIALISASI APLIKASI ===
-        const initApp = async () => {
-            console.log("Mulai initApp...");
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            console.log("Sesi awal didapatkan:", session);
-            updateUI(session?.user);
-
-            supabaseClient.auth.onAuthStateChange((_event, session) => {
-                console.log("Terjadi perubahan state auth!", _event);
-                updateUI(session?.user);
-            });
-            console.log("initApp selesai.");
-        };
-
-        // Jalankan aplikasi
-        initApp();
-
-    } catch (e) {
-        console.error("!!! TERJADI ERROR FATAL DI LEVEL ATAS !!!", e);
-        // Tampilkan error langsung di halaman untuk debugging
-        document.body.innerHTML = `<div style="padding: 20px; font-family: sans-serif; color: red;"><h1>Error Fatal</h1><p>${e.message}</p><pre>${e.stack}</pre></div>`;
+// === FUNGSI UTAMA UNTUK MENGATUR TAMPILAN ===
+const updateUI = (user) => {
+    if (user) {
+        currentUser = user;
+        authContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        userEmailDisplay.textContent = user.email;
+        loadBahanBaku();
+    } else {
+        currentUser = null;
+        authContainer.classList.remove('hidden');
+        appContainer.classList.add('hidden');
     }
-});
+};
+
+// === FUNGSI-FUNGSI APLIKASI ===
+
+const formatRupiah = (angka) => {
+    if (isNaN(angka)) return 'Rp 0,00';
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(angka);
+};
+
+const loadBahanBaku = async () => {
+    const { data, error } = await supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('Error mengambil data:', error); return; }
+
+    masterBahanTableBody.innerHTML = '';
+    data.forEach(bahan => {
+        const hargaPerSatuanDasar = (bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${bahan.nama}</td>
+            <td>${formatRupiah(bahan.harga_beli_kemasan)} / ${bahan.isi_kemasan} ${bahan.satuan_kemasan}</td>
+            <td><strong>${formatRupiah(hargaPerSatuanDasar)} / ${bahan.satuan_kemasan}</strong></td>
+            <td>
+                <button class="button-edit" data-id="${bahan.id}">Edit</button>
+                <button class="button-delete" data-id="${bahan.id}">Hapus</button>
+            </td>
+        `;
+        masterBahanTableBody.appendChild(row);
+    });
+};
+
+const simpanBahanBaku = async (event) => {
+    event.preventDefault();
+    if (!currentUser) { alert('Sesi tidak ditemukan.'); return; }
+    const nama = document.getElementById('bahan-nama').value;
+    const harga_beli_kemasan = document.getElementById('harga-beli-kemasan').value;
+    const isi_kemasan = document.getElementById('isi-kemasan').value;
+    const satuan_kemasan = document.getElementById('satuan-kemasan').value;
+
+    const { error } = await supabaseClient.from('bahan_baku').insert([{ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan, user_id: currentUser.id }]);
+    if (error) { console.error('Error menyimpan data:', error); alert('Gagal menyimpan bahan!'); } 
+    else { masterBahanForm.reset(); loadBahanBaku(); }
+};
+
+const hapusBahanBaku = async (id) => {
+    if (confirm("Yakin mau hapus bahan ini?")) {
+        const { error } = await supabaseClient.from('bahan_baku').delete().eq('id', id);
+        if (error) { console.error('Error menghapus data:', error); alert('Gagal menghapus bahan!'); } 
+        else { loadBahanBaku(); }
+    }
+};
+
+const openEditModal = async (id) => {
+    const { data, error } = await supabaseClient.from('bahan_baku').select('*').eq('id', id).single();
+    if (error) { console.error('Error mengambil data untuk diedit:', error); return; }
+
+    document.getElementById('edit-bahan-id').value = data.id;
+    document.getElementById('edit-bahan-nama').value = data.nama;
+    document.getElementById('edit-harga-beli-kemasan').value = data.harga_beli_kemasan;
+    document.getElementById('edit-isi-kemasan').value = data.isi_kemasan;
+    document.getElementById('edit-satuan-kemasan').value = data.satuan_kemasan;
+    editModal.classList.remove('hidden');
+};
+
+const simpanPerubahanBahan = async (event) => {
+    event.preventDefault();
+    const id = document.getElementById('edit-bahan-id').value;
+    const nama = document.getElementById('edit-bahan-nama').value;
+    const harga_beli_kemasan = document.getElementById('edit-harga-beli-kemasan').value;
+    const isi_kemasan = document.getElementById('edit-isi-kemasan').value;
+    const satuan_kemasan = document.getElementById('edit-satuan-kemasan').value;
+
+    const { error } = await supabaseClient.from('bahan_baku').update({ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan }).eq('id', id);
+    if (error) { console.error('Error menyimpan perubahan:', error); alert('Gagal menyimpan perubahan!'); } 
+    else { editModal.classList.add('hidden'); loadBahanBaku(); }
+};
+
+// === EVENT LISTENERS ===
+if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); } }); }
+if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error login: ' + error.message); } }); }
+if (logoutButton) { logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); }); }
+if (masterBahanForm) { masterBahanForm.addEventListener('submit', simpanBahanBaku); }
+masterBahanTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('button-delete')) { hapusBahanBaku(event.target.getAttribute('data-id')); } if (event.target.classList.contains('button-edit')) { openEditModal(event.target.getAttribute('data-id')); } });
+if(editBahanForm) { editBahanForm.addEventListener('submit', simpanPerubahanBahan); }
+if(cancelEditBtn) { cancelEditBtn.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
+
+// === INISIALISASI APLIKASI ===
+const initApp = async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    updateUI(session?.user);
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+        updateUI(session?.user);
+    });
+};
+
+initApp();
