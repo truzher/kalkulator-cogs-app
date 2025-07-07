@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let options = '<option value="">-- Pilih Bahan --</option>';
         masterBahanList.forEach(bahan => {
             const isSelected = bahan.id === bahanId ? 'selected' : '';
-            options += `<option value="${bahan.id}" ${isSelected}>${bahan.nama}</option>`;
+            options += `<option value="${bahan.id}">${bahan.nama}</option>`;
         });
         row.innerHTML = `
             <td><select class="bahan-resep-dropdown">${options}</select></td>
@@ -240,6 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${produk.nama_produk}</td>
+                <td>${produk.kategori || '-'}</td>
+                <td>${formatRupiah(produk.harga_jual_aktual)}</td>
                 <td>
                     <button class="button-edit" data-id="${produk.id}">Edit</button>
                     <button class="button-delete" data-id="${produk.id}">Hapus</button>
