@@ -1,5 +1,3 @@
-// File: app.js (VERSI FINAL DENGAN PEMBUNGKUS DOMContentLoaded)
-
 document.addEventListener('DOMContentLoaded', () => {
     // Seluruh kode kita sekarang ada di dalam sini
 
