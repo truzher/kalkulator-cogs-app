@@ -1,7 +1,7 @@
 // File: app.js (VERSI SUPER PERBAIKAN)
 
 // === KONFIGURASI SUPABASE ===
-const SUPABASE_URL = 'https://supabase.com/dashboard/project/ubfbsmhyshosiihaewis/settings/api-keys'; // Pastikan ini sudah diganti
+const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; // Pastikan ini sudah diganti
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // Pastikan ini sudah diganti
 
 // PERBAIKAN UTAMA: Kita buat variabel baru bernama 'supabaseClient'
