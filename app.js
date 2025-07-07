@@ -1,5 +1,3 @@
-// File: app.js (VERSI SUPER LENGKAP FINAL)
-
 // === KONFIGURASI SUPABASE ===
 const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
@@ -38,22 +36,22 @@ const updateUI = (user) => {
 
 // === FUNGSI-FUNGSI APLIKASI ===
 
-// 1. Memuat data bahan baku
-const loadBahanBaku = async () => {
-    const { data, error } = await supabaseClient
-        .from('bahan_baku')
-        .select('*')
-        .order('created_at', { ascending: false });
+const formatRupiah = (angka) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(angka);
+};
 
+const loadBahanBaku = async () => {
+    const { data, error } = await supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
     if (error) { console.error('Error mengambil data:', error); return; }
 
     masterBahanTableBody.innerHTML = '';
     data.forEach(bahan => {
+        const hargaPerSatuanDasar = (bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${bahan.nama}</td>
-            <td>${bahan.satuan}</td>
-            <td>${bahan.harga_satuan}</td>
+            <td>${formatRupiah(bahan.harga_beli_kemasan)} / ${bahan.isi_kemasan} ${bahan.satuan_kemasan}</td>
+            <td><strong>${formatRupiah(hargaPerSatuanDasar)} / ${bahan.satuan_kemasan}</strong></td>
             <td>
                 <button class="button-edit" data-id="${bahan.id}">Edit</button>
                 <button class="button-delete" data-id="${bahan.id}">Hapus</button>
@@ -63,74 +61,50 @@ const loadBahanBaku = async () => {
     });
 };
 
-// 2. Menyimpan bahan baku baru
 const simpanBahanBaku = async (event) => {
     event.preventDefault();
     if (!currentUser) { alert('Sesi tidak ditemukan.'); return; }
+    const nama = document.getElementById('bahan-nama').value;
+    const harga_beli_kemasan = document.getElementById('harga-beli-kemasan').value;
+    const isi_kemasan = document.getElementById('isi-kemasan').value;
+    const satuan_kemasan = document.getElementById('satuan-kemasan').value;
 
-    const namaBahan = document.getElementById('bahan-nama').value;
-    const satuanBahan = document.getElementById('bahan-satuan').value;
-    const hargaBahan = document.getElementById('bahan-harga').value;
-
-    const { error } = await supabaseClient
-        .from('bahan_baku')
-        .insert([{ nama: namaBahan, satuan: satuanBahan, harga_satuan: hargaBahan, user_id: currentUser.id }]);
-
-    if (error) {
-        console.error('Error menyimpan data:', error);
-        alert('Gagal menyimpan bahan!');
-    } else {
-        masterBahanForm.reset();
-        loadBahanBaku(); 
-    }
+    const { error } = await supabaseClient.from('bahan_baku').insert([{ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan, user_id: currentUser.id }]);
+    if (error) { console.error('Error menyimpan data:', error); alert('Gagal menyimpan bahan!'); } 
+    else { masterBahanForm.reset(); loadBahanBaku(); }
 };
 
-// 3. Menghapus bahan baku
 const hapusBahanBaku = async (id) => {
-    const yakin = confirm("Yakin mau hapus bahan ini?");
-    if (yakin) {
+    if (confirm("Yakin mau hapus bahan ini?")) {
         const { error } = await supabaseClient.from('bahan_baku').delete().eq('id', id);
-        if (error) {
-            console.error('Error menghapus data:', error);
-            alert('Gagal menghapus bahan!');
-        } else {
-            loadBahanBaku();
-        }
+        if (error) { console.error('Error menghapus data:', error); alert('Gagal menghapus bahan!'); } 
+        else { loadBahanBaku(); }
     }
 };
 
-// 4. Membuka modal edit
 const openEditModal = async (id) => {
     const { data, error } = await supabaseClient.from('bahan_baku').select('*').eq('id', id).single();
     if (error) { console.error('Error mengambil data untuk diedit:', error); return; }
 
     document.getElementById('edit-bahan-id').value = data.id;
     document.getElementById('edit-bahan-nama').value = data.nama;
-    document.getElementById('edit-bahan-satuan').value = data.satuan;
-    document.getElementById('edit-bahan-harga').value = data.harga_satuan;
+    document.getElementById('edit-harga-beli-kemasan').value = data.harga_beli_kemasan;
+    document.getElementById('edit-isi-kemasan').value = data.isi_kemasan;
+    document.getElementById('edit-satuan-kemasan').value = data.satuan_kemasan;
     editModal.classList.remove('hidden');
 };
 
-// 5. Menyimpan perubahan dari modal edit
 const simpanPerubahanBahan = async (event) => {
     event.preventDefault();
     const id = document.getElementById('edit-bahan-id').value;
     const nama = document.getElementById('edit-bahan-nama').value;
-    const satuan = document.getElementById('edit-bahan-satuan').value;
-    const harga = document.getElementById('edit-bahan-harga').value;
+    const harga_beli_kemasan = document.getElementById('edit-harga-beli-kemasan').value;
+    const isi_kemasan = document.getElementById('edit-isi-kemasan').value;
+    const satuan_kemasan = document.getElementById('edit-satuan-kemasan').value;
 
-    const { error } = await supabaseClient
-        .from('bahan_baku')
-        .update({ nama: nama, satuan: satuan, harga_satuan: harga })
-        .eq('id', id);
-    
-    if (error) {
-        console.error('Error menyimpan perubahan:', error);
-        alert('Gagal menyimpan perubahan!');
-    } else {
-        editModal.classList.add('hidden');
-        loadBahanBaku();
-    }
+    const { error } = await supabaseClient.from('bahan_baku').update({ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan }).eq('id', id);
+    if (error) { console.error('Error menyimpan perubahan:', error); alert('Gagal menyimpan perubahan!'); } 
+    else { editModal.classList.add('hidden'); loadBahanBaku(); }
 };
 
 // === EVENT LISTENERS ===
