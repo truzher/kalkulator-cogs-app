@@ -1,11 +1,12 @@
-// File: app.js (VERSI PERBAIKAN)
+// File: app.js (VERSI SUPER PERBAIKAN)
 
 // === KONFIGURASI SUPABASE ===
 const SUPABASE_URL = 'https://supabase.com/dashboard/project/ubfbsmhyshosiihaewis/settings/api-keys'; // Pastikan ini sudah diganti
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // Pastikan ini sudah diganti
 
-// KODE YANG DIPERBAIKI ADA DI BAWAH INI
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// PERBAIKAN UTAMA: Kita buat variabel baru bernama 'supabaseClient'
+// 'supabase' (tanpa client) adalah nama library global dari CDN-nya
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
 // === DOM ELEMENTS ===
@@ -24,7 +25,8 @@ signupForm.addEventListener('submit', async (event) => {
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Menggunakan 'supabaseClient'
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
     if (error) {
         alert('Error saat mendaftar: ' + error.message);
@@ -40,7 +42,8 @@ loginForm.addEventListener('submit', async (event) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    // Menggunakan 'supabaseClient'
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
         alert('Error saat login: ' + error.message);
@@ -51,7 +54,8 @@ loginForm.addEventListener('submit', async (event) => {
 
 // Logout
 logoutButton.addEventListener('click', async () => {
-    const { error } = await supabase.auth.signOut();
+    // Menggunakan 'supabaseClient'
+    const { error } = await supabaseClient.auth.signOut();
     if (error) {
         alert('Error saat logout: ' + error.message);
     }
@@ -60,7 +64,8 @@ logoutButton.addEventListener('click', async () => {
 
 // === CEK STATUS LOGIN PENGGUNA ===
 
-supabase.auth.onAuthStateChange((event, session) => {
+// Menggunakan 'supabaseClient'
+supabaseClient.auth.onAuthStateChange((event, session) => {
     if (session) {
         console.log('Pengguna login:', session.user.email);
         authContainer.classList.add('hidden');
