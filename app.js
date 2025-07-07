@@ -20,11 +20,12 @@ const masterBahanForm = document.getElementById('master-bahan-form');
 const masterBahanTableBody = document.getElementById('master-bahan-table-body');
 console.log("Selesai mengambil elemen DOM.");
 
-// --- CCTV #1: Cek apakah form login ditemukan ---
+// --- CCTV #1: Cek apakah form-form ditemukan ---
 console.log("Mencari loginForm:", loginForm);
+console.log("Mencari signupForm:", signupForm);
 
 
-// === FUNGSI-FUNGSI APLIKASI ===
+// === FUNGSI-FUNGSI APLIKASI (Tidak ada perubahan di sini) ===
 const loadBahanBaku = async () => { /* ...kode tetap sama... */ };
 const simpanBahanBaku = async (event) => { /* ...kode tetap sama... */ };
 const hapusBahanBaku = async (id) => { /* ...kode tetap sama... */ };
@@ -33,18 +34,40 @@ const simpanPerubahanBahan = async (event) => { /* ...kode tetap sama... */ };
 
 
 // === EVENT LISTENERS ===
+
+// Listener untuk form SIGNUP
+if (signupForm) {
+    console.log("signupForm ditemukan, memasang event listener...");
+    signupForm.addEventListener('submit', async (event) => {
+        console.log("Tombol DAFTAR diklik! Form disubmit.");
+        event.preventDefault();
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+
+        console.log("Mencoba mendaftar ke Supabase dengan email:", email);
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+        if (error) {
+            alert('Error saat mendaftar: ' + error.message);
+            console.error("Supabase signup error:", error);
+        } else {
+            alert('Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
+            signupForm.reset();
+        }
+    });
+} else {
+    console.error("ERROR FATAL: Element dengan id 'signup-form' tidak ditemukan!");
+}
+
+// Listener untuk form LOGIN
 if (loginForm) {
-    // --- CCTV #2: Konfirmasi event listener akan dipasang ---
-    console.log("loginForm ditemukan, memasang event listener untuk 'submit'...");
+    console.log("loginForm ditemukan, memasang event listener...");
     loginForm.addEventListener('submit', async (event) => {
-        // --- CCTV #3: Konfirmasi tombol login diklik ---
-        console.log("Tombol Login DIKLIK! Form disubmit.");
-        
+        console.log("Tombol LOGIN diklik! Form disubmit.");
         event.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-
-        // --- CCTV #4: Konfirmasi akan mengirim data ke Supabase ---
+        
         console.log("Mencoba login ke Supabase dengan email:", email);
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
@@ -52,8 +75,7 @@ if (loginForm) {
             alert('Error saat login: ' + error.message);
             console.error("Supabase login error:", error);
         } else {
-            // Jika berhasil, onAuthStateChange akan handle sisanya
-            console.log("Supabase login request berhasil (tanpa error). Menunggu state change...");
+            console.log("Supabase login request berhasil. Menunggu state change...");
             loginForm.reset();
         }
     });
@@ -61,7 +83,7 @@ if (loginForm) {
     console.error("ERROR FATAL: Element dengan id 'login-form' tidak ditemukan!");
 }
 
-// ... Sisa event listener lainnya (signup, logout, dll) tetap sama ...
+// ... Sisa event listener lainnya tetap sama ...
 
 
 // === CEK STATUS LOGIN PENGGUNA ===
