@@ -1,66 +1,66 @@
 /* === FONT MODERN DARI GOOGLE FONTS === */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* === CSS VARIABLES UNTUK TEMA WARNA === */
+/* === CSS VARIABLES UNTUK TEMA WARNA (DARK MODE) === */
 :root {
-    --primary-color: #007BFF; /* Biru modern */
-    --primary-hover: #0056b3;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
-    --background-color: #f4f7f9;
-    --text-color: #212529;
-    --border-color: #dee2e6;
-    --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+    --primary-color: #3b82f6; /* Biru terang */
+    --primary-hover: #2563eb;
+    --background-color: #111827; /* Abu-abu gelap */
+    --surface-color: #1f2937;   /* Warna kartu/panel */
+    --border-color: #374151;
+    --text-color: #f9fafb;      /* Putih keabuan */
+    --text-secondary: #9ca3af;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --success-color: #22c55e;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* === GENERAL STYLING === */
 body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', sans-serif;
     line-height: 1.6;
     background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
-    padding: 15px; /* Padding lebih kecil untuk mobile */
+    padding: 15px;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1200px; /* Lebih lebar untuk layout 2 kolom */
     margin: 20px auto;
-    background: #fff;
-    padding: 20px; /* Padding lebih kecil untuk mobile */
-    border-radius: 12px;
-    box-shadow: var(--shadow);
 }
 
 h1, h2, h3 {
-    color: var(--dark-color);
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
-h1 {
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 15px;
-    margin-bottom: 25px;
-    font-size: 1.8rem;
-}
+h1 { font-size: 2.5rem; }
+h2 { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 20px; }
+h3 { font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
 
-h2 {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-    margin-top: 30px;
-    margin-bottom: 20px;
-    font-size: 1.4rem;
-    color: var(--primary-color);
-}
+hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
 
-hr {
-    border: 0;
-    border-top: 1px solid #e9ecef;
-    margin: 30px 0;
+/* === HERO & AUTH SECTION === */
+.hero-section {
+    text-align: center;
+    padding: 40px 20px;
+    margin-bottom: 30px;
+}
+.hero-section .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 15px auto 0;
+}
+.auth-box {
+    background-color: var(--surface-color);
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 450px;
+    margin: auto;
+    border: 1px solid var(--border-color);
 }
 
 /* === FORM & INPUT STYLING === */
@@ -69,6 +69,7 @@ label {
     margin-bottom: 8px;
     font-weight: 500;
     font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
 input[type="text"],
@@ -78,19 +79,20 @@ input[type="number"],
 select.bahan-resep-dropdown {
     width: 100%;
     padding: 12px 15px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     box-sizing: border-box;
     font-size: 1rem;
+    background-color: #374151; /* Warna input lebih gelap */
+    color: var(--text-color);
     transition: border-color 0.2s, box-shadow 0.2s;
-    background-color: #fff;
 }
 
 input:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
 }
 
 /* === BUTTON STYLING === */
@@ -99,136 +101,48 @@ button {
     padding: 12px 15px;
     border: none;
     border-radius: 8px;
-    box-sizing: border-box;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    transition: all 0.2s;
 }
+button:hover { transform: translateY(-2px); }
+button[type="submit"] { background-color: var(--primary-color); color: white; }
+button[type="submit"]:hover { background-color: var(--primary-hover); }
+.button-secondary { background-color: var(--text-secondary); color: var(--background-color); }
+.button-secondary:hover { background-color: #f9fafb; }
 
-button:hover {
-    transform: translateY(-2px);
-}
 
-button[type="submit"] {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-button[type="submit"]:hover {
-    background-color: var(--primary-hover);
-}
-
-#logout-button, .button-delete {
-    background-color: var(--danger-color);
-    color: white;
-}
-#logout-button:hover, .button-delete:hover {
-    background-color: #b22222;
-}
-
-.button-edit {
-    background-color: var(--warning-color);
-    color: var(--dark-color);
-}
-.button-edit:hover {
-    background-color: #e0a800;
-}
-
-/* === LAYOUT & UTILITIES === */
+/* === APP LAYOUT === */
 .hidden { display: none !important; }
-.app-header { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.app-header h1 { width: 100%; margin-bottom: 15px;}
-#logout-button { width: auto; padding: 8px 15px; text-transform: none; letter-spacing: 0; }
-.section { margin-bottom: 40px; }
-.input-group { display: flex; flex-direction: column; gap: 0; } /* Stack di mobile */
-.input-group > div { flex: 1; }
+.app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: var(--surface-color); border-radius: 12px; margin-bottom: 20px; }
+.main-layout { display: flex; flex-direction: column; gap: 30px; }
+.section { background-color: var(--surface-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
 
 /* === TABLE STYLING === */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 0.9rem; /* Font lebih kecil untuk tabel di mobile */
-}
-th, td {
-    padding: 10px; /* Padding lebih kecil */
-    text-align: left;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--border-color);
-}
-thead {
-    background-color: var(--light-color);
-}
-tbody tr:nth-child(even) {
-    background-color: var(--light-color);
-}
-td button {
-    font-size: 12px;
-    padding: 6px 10px;
-    margin-right: 5px;
-    width: auto;
-    text-transform: none;
-    letter-spacing: 0;
-}
-
-/* === MODAL STYLING === */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    padding: 15px;
-}
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-.modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-#cancel-edit-btn { background-color: var(--secondary-color); }
-#cancel-edit-btn:hover { background-color: #5a6268; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { padding: 12px 10px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); }
+thead { color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; }
+td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; }
+.button-delete, #logout-button { background-color: var(--danger-color); color: white; }
+.button-edit { background-color: var(--warning-color); color: var(--dark-color); }
 
 /* === KALKULATOR HPP STYLING === */
-#add-resep-item-btn {
-    width: auto;
-    padding: 10px 20px;
-    font-weight: 500;
-    text-transform: none;
-    background-color: var(--success-color);
-}
-#add-resep-item-btn:hover { background-color: #218838; }
-.hpp-summary {
-    background-color: var(--light-color);
-    padding: 15px 20px;
-    border-radius: 8px;
-    border-left: 5px solid var(--primary-color);
-    margin-top: 20px;
-}
-.hpp-summary h3 { margin: 0; font-size: 1.1rem; }
+#add-resep-item-btn { width: auto; padding: 10px 20px; background-color: var(--primary-color); margin-top: 15px; }
+.hpp-summary { background-color: var(--background-color); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; }
+.hpp-summary h3 { margin: 0; font-size: 1.2rem; }
 #hpp-form button[type="submit"] { background-color: var(--success-color); }
-#hpp-form button[type="submit"]:hover { background-color: #218838; }
+
+/* === MODAL STYLING === */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+.modal-content { background: var(--surface-color); padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid var(--border-color); }
+.modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+#cancel-edit-btn { background-color: var(--text-secondary); color: var(--background-color); }
 
 /* === DESKTOP & TABLET STYLES (MEDIA QUERIES) === */
-@media (min-width: 768px) {
-    body { padding: 30px; }
-    .container { padding: 30px 40px; }
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-    .app-header { flex-direction: row; align-items: center; }
-    .input-group { flex-direction: row; gap: 20px; }
+@media (min-width: 1024px) {
+    .main-layout { flex-direction: row; align-items: flex-start; }
+    .main-column { flex: 2; }
+    .sidebar-column { flex: 1; }
     .modal-actions { flex-direction: row; }
-    table { font-size: 1rem; }
-    th, td { padding: 12px 15px; }
 }
