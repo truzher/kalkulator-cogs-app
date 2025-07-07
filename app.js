@@ -1,8 +1,12 @@
-// === KONFIGURASI SUPABASE ===
-const SUPABASE_URL = 'https://supabase.com/dashboard/project/ubfbsmhyshosiihaewis/settings/api-keys'; // Ganti dengan URL proyek Supabase loe
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // Ganti dengan Anon Key proyek Supabase loe
+// File: app.js (VERSI PERBAIKAN)
 
+// === KONFIGURASI SUPABASE ===
+const SUPABASE_URL = 'https://supabase.com/dashboard/project/ubfbsmhyshosiihaewis/settings/api-keys'; // Pastikan ini sudah diganti
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // Pastikan ini sudah diganti
+
+// KODE YANG DIPERBAIKI ADA DI BAWAH INI
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 // === DOM ELEMENTS ===
 const authContainer = document.getElementById('auth-container');
@@ -41,7 +45,6 @@ loginForm.addEventListener('submit', async (event) => {
     if (error) {
         alert('Error saat login: ' + error.message);
     } else {
-        // State change akan ditangani oleh onAuthStateChange
         loginForm.reset();
     }
 });
@@ -52,7 +55,6 @@ logoutButton.addEventListener('click', async () => {
     if (error) {
         alert('Error saat logout: ' + error.message);
     }
-    // State change akan ditangani oleh onAuthStateChange
 });
 
 
@@ -60,17 +62,12 @@ logoutButton.addEventListener('click', async () => {
 
 supabase.auth.onAuthStateChange((event, session) => {
     if (session) {
-        // Pengguna sudah login
         console.log('Pengguna login:', session.user.email);
         authContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
         userEmailDisplay.textContent = session.user.email;
-
-        // Di sini nanti kita akan memanggil fungsi untuk memuat data pengguna
-        // contoh: loadBahanBaku();
         
     } else {
-        // Pengguna tidak login
         console.log('Pengguna tidak login.');
         authContainer.classList.remove('hidden');
         appContainer.classList.add('hidden');
