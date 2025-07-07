@@ -1,4 +1,4 @@
-// File: app.js (VERSI FINAL DENGAN FIX EKSPLISIT USER ID)
+// File: app.js (VERSI SUPER DEBUGGING)
 
 // === KONFIGURASI SUPABASE ===
 const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
@@ -11,76 +11,57 @@ let currentUser = null;
 // === DOM ELEMENTS ===
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
 const logoutButton = document.getElementById('logout-button');
 const userEmailDisplay = document.getElementById('user-email-display');
 const masterBahanForm = document.getElementById('master-bahan-form');
 const masterBahanTableBody = document.getElementById('master-bahan-table-body');
 
-// --- Mengambil elemen tombol secara langsung ---
-const signupButton = document.querySelector('#signup-form button[type="submit"]');
-const loginButton = document.querySelector('#login-form button[type="submit"]');
-
-
-// === FUNGSI-FUNGSI APLIKASI (Tidak ada perubahan di sini) ===
-const loadBahanBaku = async () => { /* ... */ };
-const simpanBahanBaku = async (event) => { /* ... */ };
+// === FUNGSI-FUNGSI APLIKASI (Tetap sama) ===
+const loadBahanBaku = async () => { /* ...kode tetap sama... */ };
+const simpanBahanBaku = async (event) => { /* ...kode tetap sama... */ };
 // ... dan fungsi lainnya ...
 
+// === EVENT LISTENERS (Tetap sama) ===
+if (loginForm) { loginForm.addEventListener('submit', async (event) => { /* ...kode tetap sama... */ }); }
+if (signupForm) { signupForm.addEventListener('submit', async (event) => { /* ...kode tetap sama... */ }); }
+// ... dan sisanya ...
 
-// === EVENT LISTENERS ===
-
-// ▼▼▼ PERUBAHAN UTAMA ADA DI SINI ▼▼▼
-// Listener untuk tombol SIGNUP
-if (signupButton) {
-    console.log("Tombol 'Daftar' ditemukan, memasang event listener 'click'...");
-    signupButton.addEventListener('click', async (event) => {
-        event.preventDefault(); // Tetap diperlukan untuk mencegah reload
-        console.log("Tombol DAFTAR diklik!");
-        
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-
-        console.log("Mencoba mendaftar ke Supabase dengan email:", email);
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
-
-        if (error) {
-            alert('Error saat mendaftar: ' + error.message);
-            console.error("Supabase signup error:", error);
-        } else {
-            alert('Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
-        }
-    });
-} else {
-    console.error("ERROR FATAL: Tombol 'Daftar' tidak ditemukan!");
-}
-
-// Listener untuk tombol LOGIN
-if (loginButton) {
-    console.log("Tombol 'Login' ditemukan, memasang event listener 'click'...");
-    loginButton.addEventListener('click', async (event) => {
-        event.preventDefault(); // Tetap diperlukan untuk mencegah reload
-        console.log("Tombol LOGIN diklik!");
-
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        
-        console.log("Mencoba login ke Supabase dengan email:", email);
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-        if (error) {
-            alert('Error saat login: ' + error.message);
-        } else {
-            console.log("Supabase login request berhasil. Menunggu state change...");
-        }
-    });
-} else {
-    console.error("ERROR FATAL: Tombol 'Login' tidak ditemukan!");
-}
-
-// ... Sisa event listener lainnya ...
-
-
-// === CEK STATUS LOGIN PENGGUNA ===
+// === CEK STATUS LOGIN PENGGUNA (BAGIAN YANG DI-UPDATE) ===
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    // ... kode di sini tetap sama ...
+    console.log("--- FUNGSI onAuthStateChange TERPANGGIL! ---");
+    console.log("Event:", event);
+    console.log("Session:", session);
+
+    if (session) {
+        console.log("STEP 1: Sesi DITEMUKAN. Pengguna sudah login.");
+        currentUser = session.user;
+        
+        try {
+            console.log("STEP 2: Mencoba menyembunyikan authContainer...");
+            authContainer.classList.add('hidden');
+            
+            console.log("STEP 3: Mencoba menampilkan appContainer...");
+            appContainer.classList.remove('hidden');
+            
+            console.log("STEP 4: Mencoba menampilkan email pengguna...");
+            userEmailDisplay.textContent = currentUser.email;
+            
+            console.log("STEP 5: Mencoba memuat data bahan baku...");
+            loadBahanBaku();
+            console.log("STEP 6: Selesai memuat data bahan baku (tanpa error).");
+        } catch (e) {
+            console.error("!!! ERROR TERJADI DI DALAM onAuthStateChange !!!", e);
+        }
+
+    } else {
+        console.log("Sesi TIDAK ditemukan. Pengguna logout atau belum login.");
+        try {
+            authContainer.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+        } catch(e) {
+            console.error("!!! ERROR saat menampilkan halaman auth !!!", e);
+        }
+    }
 });
