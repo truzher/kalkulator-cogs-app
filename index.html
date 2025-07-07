@@ -12,16 +12,13 @@
     <div id="auth-container">
         <h1>Selamat Datang!</h1>
         <p>Silakan masuk atau daftar untuk mulai menghitung HPP produk Anda.</p>
-        
         <form id="login-form" class="auth-form">
             <h2>Masuk</h2>
             <input type="email" id="login-email" placeholder="Email" required>
             <input type="password" id="login-password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
-
         <hr>
-
         <form id="signup-form" class="auth-form">
             <h2>Daftar Akun Baru</h2>
             <input type="email" id="signup-email" placeholder="Email" required>
@@ -38,57 +35,31 @@
                 <button id="logout-button">Logout</button>
             </div>
         </div>
-        
         <hr>
-
         <div class="section" id="master-bahan-container">
             <h2>Master Bahan Baku</h2>
             <p>Kelola semua bahan mentah kamu di sini.</p>
-            
             <form id="master-bahan-form">
                 <div class="input-group">
-                    <div>
-                        <label for="bahan-nama">Nama Bahan</label>
-                        <input type="text" id="bahan-nama" placeholder="cth: Tepung Terigu" required>
-                    </div>
-                    <div>
-                        <label for="bahan-satuan">Satuan</label>
-                        <input type="text" id="bahan-satuan" placeholder="cth: gram" required>
-                    </div>
-                    <div>
-                        <label for="bahan-harga">Harga per Satuan (Rp)</label>
-                        <input type="number" id="bahan-harga" placeholder="cth: 15" required>
-                    </div>
+                    <div><label for="bahan-nama">Nama Bahan</label><input type="text" id="bahan-nama" placeholder="cth: Tepung Terigu" required></div>
+                    <div><label for="bahan-satuan">Satuan</label><input type="text" id="bahan-satuan" placeholder="cth: gram" required></div>
+                    <div><label for="bahan-harga">Harga per Satuan (Rp)</label><input type="number" id="bahan-harga" placeholder="cth: 15" required></div>
                 </div>
                 <button type="submit">Simpan Bahan</button>
             </form>
-            
             <table id="master-bahan-table">
-                <thead>
-                    <tr>
-                        <th>Nama Bahan</th>
-                        <th>Satuan</th>
-                        <th>Harga (Rp)</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="master-bahan-table-body">
-                    </tbody>
+                <thead><tr><th>Nama Bahan</th><th>Satuan</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>
+                <tbody id="master-bahan-table-body"></tbody>
             </table>
         </div>
-
         <div class="section" id="kalkulator-container">
             <h2>Kalkulator HPP Produk</h2>
             <p>Buat resep dan hitung HPP produk jualanmu di sini.</p>
         </div>
-
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js"></script>
-
-  <div id="edit-modal" class="modal-overlay hidden">
+<div id="edit-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <h2>Edit Bahan Baku</h2>
         <form id="edit-bahan-form">
@@ -113,8 +84,9 @@
     </div>
 </div>
 
-</body>
-</html>  
-    
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
