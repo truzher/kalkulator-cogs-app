@@ -12,10 +12,8 @@ const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
 const logoutButton = document.getElementById('logout-button');
 const userEmailDisplay = document.getElementById('user-email-display');
-const masterBahanTableBody = document.getElementById('master-bahan-table-body');
-// ▼▼▼ DOM ELEMENT BARU ▼▼▼
 const masterBahanForm = document.getElementById('master-bahan-form');
-
+const masterBahanTableBody = document.getElementById('master-bahan-table-body');
 
 // === FUNGSI-FUNGSI APLIKASI ===
 
@@ -46,40 +44,33 @@ const loadBahanBaku = async () => {
     });
 };
 
-// ▼▼▼ FUNGSI BARU UNTUK MENYIMPAN DATA ▼▼▼
 const simpanBahanBaku = async (event) => {
-    event.preventDefault(); // Mencegah halaman reload saat form disubmit
-
+    event.preventDefault();
     const namaBahan = document.getElementById('bahan-nama').value;
     const satuanBahan = document.getElementById('bahan-satuan').value;
     const hargaBahan = document.getElementById('bahan-harga').value;
 
-    // Kirim data ke Supabase
     const { data, error } = await supabaseClient
         .from('bahan_baku')
-        .insert([
-            { nama: namaBahan, satuan: satuanBahan, harga_satuan: hargaBahan }
-        ]);
+        .insert([{ nama: namaBahan, satuan: satuanBahan, harga_satuan: hargaBahan }])
+        .select(); // Minta data yang baru di-insert untuk dikembalikan
 
     if (error) {
         console.error('Error menyimpan bahan baku:', error);
         alert('Gagal menyimpan bahan! Cek console untuk detail error.');
     } else {
         console.log('Bahan baku berhasil disimpan:', data);
-        masterBahanForm.reset(); // Kosongkan form setelah berhasil
-        loadBahanBaku(); // Muat ulang tabel untuk menampilkan data baru
+        masterBahanForm.reset();
+        loadBahanBaku(); 
     }
 };
 
 
 // === EVENT LISTENERS ===
-
-// Cek dulu apakah form-nya ada sebelum menambahkan event listener
-if (signupForm) { signupForm.addEventListener('submit', async (event) => { /* ...kode tetap sama... */ }); }
-if (loginForm) { loginForm.addEventListener('submit', async (event) => { /* ...kode tetap sama... */ }); }
-if (logoutButton) { logoutButton.addEventListener('click', async () => { /* ...kode tetap sama... */ }); }
-// ▼▼▼ EVENT LISTENER BARU ▼▼▼
 if (masterBahanForm) { masterBahanForm.addEventListener('submit', simpanBahanBaku); }
+if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { data, error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error saat mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Silakan cek email untuk verifikasi.'); signupForm.reset(); } }); }
+if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error saat login: ' + error.message); } else { loginForm.reset(); } }); }
+if (logoutButton) { logoutButton.addEventListener('click', async () => { const { error } = await supabaseClient.auth.signOut(); if (error) { alert('Error saat logout: ' + error.message); } }); }
 
 
 // === CEK STATUS LOGIN PENGGUNA ===
@@ -94,8 +85,3 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         appContainer.classList.add('hidden');
     }
 });
-
-// Duplikasi kode fungsi auth yang tidak berubah
-if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { data, error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error saat mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Silakan cek email untuk verifikasi.'); signupForm.reset(); } }); }
-if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error saat login: ' + error.message); } else { loginForm.reset(); } }); }
-if (logoutButton) { logoutButton.addEventListener('click', async () => { const { error } = await supabaseClient.auth.signOut(); if (error) { alert('Error saat logout: ' + error.message); } }); }
