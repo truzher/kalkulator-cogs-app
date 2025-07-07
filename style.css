@@ -3,8 +3,8 @@
 
 /* === CSS VARIABLES UNTUK TEMA WARNA (DARK MODE) === */
 :root {
-    --primary-color: #3b82f6; /* Biru terang */
-    --primary-hover: #2563eb;
+    --primary-color: #14b8a6; /* Tosca Segar */
+    --primary-hover: #0d9488;
     --background-color: #111827; /* Abu-abu gelap */
     --surface-color: #1f2937;   /* Warna kartu/panel */
     --border-color: #374151;
@@ -92,7 +92,7 @@ select.bahan-resep-dropdown {
 input:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.4);
 }
 
 /* === BUTTON STYLING === */
