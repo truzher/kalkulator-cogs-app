@@ -3,108 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator COGS F&B by HABB</title>
+    <title>Kalkulator COGS F&B</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
+    <!-- ====================================================== -->
+    <!-- BAGIAN AUTENTIKASI (LOGIN/SIGNUP) -->
+    <!-- ====================================================== -->
     <div id="auth-container">
-        <h1>Selamat Datang!</h1>
-        <p>Silakan masuk atau daftar untuk mulai menghitung HPP produk Anda.</p>
-        <form id="login-form" class="auth-form">
-            <h2>Masuk</h2>
-            <input type="email" id="login-email" placeholder="Email" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <hr>
-        <form id="signup-form" class="auth-form">
-            <h2>Daftar Akun Baru</h2>
-            <input type="email" id="signup-email" placeholder="Email" required>
-            <input type="password" id="signup-password" placeholder="Password (min. 6 karakter)" required>
-            <button type="submit">Daftar</button>
-        </form>
+        <!-- HERO SECTION BARU -->
+        <div class="hero-section">
+            <h1>Hitung HPP Jadi Gampang ✨</h1>
+            <p class="subtitle">Ucapkan selamat tinggal pada spreadsheet rumit. Atur harga jual, lacak biaya, dan maksimalkan profit bisnismu dengan mudah.</p>
+        </div>
+
+        <!-- FORM LOGIN & SIGNUP DALAM SATU KOTAK -->
+        <div class="auth-box">
+            <form id="login-form" class="auth-form">
+                <h2>Masuk Akun</h2>
+                <input type="email" id="login-email" placeholder="Email kamu" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <hr>
+            <form id="signup-form" class="auth-form">
+                <h2>Belum Punya Akun? Daftar Gratis!</h2>
+                <input type="email" id="signup-email" placeholder="Email kamu" required>
+                <input type="password" id="signup-password" placeholder="Password (min. 6 karakter)" required>
+                <button type="submit" class="button-secondary">Daftar Sekarang</button>
+            </form>
+        </div>
     </div>
 
+    <!-- ====================================================== -->
+    <!-- BAGIAN APLIKASI UTAMA (SETELAH LOGIN) -->
+    <!-- ====================================================== -->
     <div id="app-container" class="hidden">
         <div class="app-header">
-            <h1>Kalkulator COGS F&B</h1>
+            <h1>Dasbor HPP</h1>
             <div>
                 <span id="user-email-display"></span>
                 <button id="logout-button">Logout</button>
             </div>
         </div>
         
-        <div class="section" id="master-bahan-container">
-            <h2>Master Bahan Baku</h2>
-            <p>Masukkan data bahan sesuai kemasan yang kamu beli.</p>
-            <form id="master-bahan-form">
-                <div class="input-group">
-                    <div style="flex: 2;"><label for="bahan-nama">Nama Bahan</label><input type="text" id="bahan-nama" placeholder="cth: Gula Aren Cair" required></div>
-                    <div style="flex: 1.5;"><label for="harga-beli-kemasan">Harga Beli Kemasan (Rp)</label><input type="number" id="harga-beli-kemasan" placeholder="cth: 50000" required></div>
+        <!-- Tata Letak Baru dengan Kolom -->
+        <div class="main-layout">
+            <!-- Kolom Kiri: Kalkulator & Daftar Produk -->
+            <div class="main-column">
+                <div class="section" id="kalkulator-container">
+                    <h2>Kalkulator HPP Produk</h2>
+                    <form id="hpp-form">
+                        <label for="produk-nama">Nama Produk</label>
+                        <input type="text" id="produk-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
+                        <h3>Bahan Resep</h3>
+                        <table id="resep-table">
+                            <thead>
+                                <tr>
+                                    <th>Pilih Bahan</th>
+                                    <th>Jumlah</th>
+                                    <th>Biaya</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resep-table-body"></tbody>
+                        </table>
+                        <button type="button" id="add-resep-item-btn">+ Tambah Bahan</button>
+                        <div class="hpp-summary">
+                            <h3>Total HPP (Modal): <span id="total-hpp-display">Rp 0,00</span></h3>
+                        </div>
+                        <button type="submit">Simpan Produk & Resep</button>
+                    </form>
                 </div>
-                <div class="input-group">
-                    <div style="flex: 1;"><label for="isi-kemasan">Isi Kemasan</label><input type="number" id="isi-kemasan" placeholder="cth: 1000" required></div>
-                    <div style="flex: 1;"><label for="satuan-kemasan">Satuan Kemasan</label><input type="text" id="satuan-kemasan" placeholder="cth: ml, gram" required></div>
+
+                <div class="section" id="master-produk-container">
+                    <h2>Daftar Produk Tersimpan</h2>
+                    <table id="produk-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produk-table-body"></tbody>
+                    </table>
                 </div>
-                <button type="submit">Simpan Bahan</button>
-            </form>
-            <table id="master-bahan-table">
-                <thead><tr><th>Nama Bahan</th><th>Info Pembelian</th><th>Harga/Satuan Dasar</th><th>Aksi</th></tr></thead>
-                <tbody id="master-bahan-table-body"></tbody>
-            </table>
+            </div>
+
+            <!-- Kolom Kanan: Master Bahan Baku -->
+            <div class="sidebar-column">
+                <div class="section" id="master-bahan-container">
+                    <h2>Master Bahan Baku</h2>
+                    <form id="master-bahan-form">
+                        <label for="bahan-nama">Nama Bahan</label>
+                        <input type="text" id="bahan-nama" placeholder="cth: Gula Aren Cair" required>
+                        <label for="harga-beli-kemasan">Harga Beli Kemasan (Rp)</label>
+                        <input type="number" id="harga-beli-kemasan" placeholder="cth: 50000" required>
+                        <div class="input-group">
+                            <div>
+                                <label for="isi-kemasan">Isi</label>
+                                <input type="number" id="isi-kemasan" placeholder="1000" required>
+                            </div>
+                            <div>
+                                <label for="satuan-kemasan">Satuan</label>
+                                <input type="text" id="satuan-kemasan" placeholder="ml" required>
+                            </div>
+                        </div>
+                        <button type="submit">Simpan Bahan</button>
+                    </form>
+                    <table id="master-bahan-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Bahan</th>
+                                <th>Harga/Satuan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="master-bahan-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-
-        <div class="section" id="kalkulator-container">
-            <h2>Kalkulator HPP Produk</h2>
-            <p>Buat resep dan hitung HPP produk jualanmu di sini.</p>
-            
-            <form id="hpp-form">
-                <label for="produk-nama">Nama Produk Baru</label>
-                <input type="text" id="produk-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
-
-                <h3>Bahan untuk Resep Ini</h3>
-                <table id="resep-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40%;">Pilih Bahan Baku</th>
-                            <th style="width: 15%;">Jumlah</th>
-                            <th style="width: 15%;">Satuan</th>
-                            <th style="width: 20%;">Biaya Bahan (Rp)</th>
-                            <th style="width: 10%;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resep-table-body">
-                        </tbody>
-                </table>
-                <button type="button" id="add-resep-item-btn">+ Tambah Bahan</button>
-                
-                <hr>
-
-                <div class="hpp-summary">
-                    <h3>Total HPP (Modal): <span id="total-hpp-display">Rp 0,00</span></h3>
-                </div>
-
-                <button type="submit">Simpan Produk & Resep</button>
-            </form>
-        </div>
-
     </div>
 </div>
 
+<!-- Modal Edit -->
 <div id="edit-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <h2>Edit Bahan Baku</h2>
         <form id="edit-bahan-form">
             <input type="hidden" id="edit-bahan-id">
+            <label for="edit-bahan-nama">Nama Bahan</label>
+            <input type="text" id="edit-bahan-nama" required>
+            <label for="edit-harga-beli-kemasan">Harga Beli Kemasan (Rp)</label>
+            <input type="number" id="edit-harga-beli-kemasan" required>
             <div class="input-group">
-                <div style="flex: 2;"><label for="edit-bahan-nama">Nama Bahan</label><input type="text" id="edit-bahan-nama" required></div>
-                <div style="flex: 1.5;"><label for="edit-harga-beli-kemasan">Harga Beli Kemasan (Rp)</label><input type="number" id="edit-harga-beli-kemasan" required></div>
-            </div>
-            <div class="input-group">
-                <div style="flex: 1;"><label for="edit-isi-kemasan">Isi Kemasan</label><input type="number" id="edit-isi-kemasan" required></div>
-                <div style="flex: 1;"><label for="edit-satuan-kemasan">Satuan Kemasan</label><input type="text" id="edit-satuan-kemasan" required></div>
+                <div>
+                    <label for="edit-isi-kemasan">Isi</label>
+                    <input type="number" id="edit-isi-kemasan" required>
+                </div>
+                <div>
+                    <label for="edit-satuan-kemasan">Satuan</label>
+                    <input type="text" id="edit-satuan-kemasan" required>
+                </div>
             </div>
             <div class="modal-actions">
                 <button type="button" id="cancel-edit-btn">Batal</button>
@@ -114,6 +157,7 @@
     </div>
 </div>
 
+<!-- Script Tags -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 
