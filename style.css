@@ -73,49 +73,19 @@ button[type="submit"]:hover { background-color: var(--primary-hover); }
 .user-menu { display: flex; align-items: center; gap: 15px; }
 #logout-button { width: auto; padding: 8px 15px; }
 
-/* === NAVIGASI UTAMA (VERSI BARU & MODERN) === */
-.main-nav {
-    display: flex;
-    gap: 8px; /* Jarak antar tombol */
-    margin-bottom: 25px;
-    background-color: #e9ecef; /* Warna latar belakang 'track' navigasi */
-    padding: 6px;
-    border-radius: 10px; /* Sudut track yang rounded */
-    overflow-x: auto; /* Agar bisa scroll di HP jika tombol banyak */
-}
-.nav-button {
-    flex: 1; /* Di mobile, tombol akan mengisi ruang */
-    padding: 10px 15px;
-    background-color: transparent;
-    color: var(--text-secondary);
-    border: none;
-    border-radius: 8px; /* Sudut tombol yang rounded (pill style) */
-    font-weight: 600;
-    cursor: pointer;
-    transition: color 0.2s, background-color 0.2s, box-shadow 0.2s;
-    white-space: nowrap; /* Agar teks tidak patah di mobile */
-}
-.nav-button:hover {
-    background-color: rgba(0,0,0,0.05); /* Efek hover halus */
-    color: var(--text-color);
-}
-.nav-button.active {
-    background-color: var(--surface-color); /* Warna aktif yang solid */
-    color: var(--primary-color);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Efek bayangan halus */
-}
+/* === NAVIGASI UTAMA === */
+.main-nav { display: flex; gap: 8px; margin-bottom: 25px; background-color: #e9ecef; padding: 6px; border-radius: 10px; overflow-x: auto; }
+.nav-button { flex: 1; padding: 10px 15px; background-color: transparent; color: var(--text-secondary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: color 0.2s, background-color 0.2s, box-shadow 0.2s; white-space: nowrap; }
+.nav-button:hover { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
+.nav-button.active { background-color: var(--surface-color); color: var(--primary-color); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
 
 /* === KONTEN HALAMAN (PAGE) === */
-.page {
-    display: none; /* Semua halaman disembunyikan by default */
-}
-.page.active {
-    display: block; /* Hanya halaman aktif yang muncul */
-}
+.page { display: none; }
+.page.active { display: block; }
 .section { background-color: var(--surface-color); padding: 25px; border-radius: 12px; border: 1px solid #e9ecef; box-shadow: var(--shadow); }
 
 /* === TABLE STYLING === */
-.table-wrapper { overflow-x: auto; } /* Agar tabel bisa di-scroll di HP */
+.table-wrapper { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
 th, td { padding: 12px 10px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
 thead { color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; background-color: #f8f9fa; }
@@ -123,10 +93,21 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
 .button-delete { background-color: var(--danger-color); color: white; }
 .button-edit { background-color: var(--warning-color); color: var(--dark-color); }
 
+/* === KALKULATOR HPP STYLING === */
+#add-resep-item-btn { width: auto; padding: 10px 20px; background-color: var(--primary-color); margin-top: 15px; }
+.hpp-summary { background-color: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; }
+.hpp-summary h3 { margin: 0; font-size: 1.2rem; }
+.hpp-summary p { margin: 5px 0 0; color: var(--text-secondary); }
+#hpp-form button[type="submit"] { background-color: var(--success-color); }
+
+/* === MODAL STYLING === */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+.modal-content { background: var(--surface-color); padding: 30px; border-radius: 12px; width: 100%; max-width: 600px; border: 1px solid var(--border-color); }
+.modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+#cancel-edit-btn { background-color: var(--text-secondary); color: white; }
+
 /* === DESKTOP & TABLET STYLES (MEDIA QUERIES) === */
 @media (min-width: 768px) {
-    body { padding: 30px; }
-    .container { padding: 30px 40px; }
     .app-header { flex-wrap: nowrap; }
     .nav-button { flex: 0 1 auto; padding: 12px 20px; }
 }
