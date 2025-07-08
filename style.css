@@ -73,31 +73,36 @@ button[type="submit"]:hover { background-color: var(--primary-hover); }
 .user-menu { display: flex; align-items: center; gap: 15px; }
 #logout-button { width: auto; padding: 8px 15px; }
 
-/* === NAVIGASI UTAMA === */
+/* === NAVIGASI UTAMA (VERSI BARU & MODERN) === */
 .main-nav {
     display: flex;
-    gap: 10px;
+    gap: 8px; /* Jarak antar tombol */
     margin-bottom: 25px;
-    border-bottom: 1px solid var(--border-color);
+    background-color: #e9ecef; /* Warna latar belakang 'track' navigasi */
+    padding: 6px;
+    border-radius: 10px; /* Sudut track yang rounded */
+    overflow-x: auto; /* Agar bisa scroll di HP jika tombol banyak */
 }
 .nav-button {
-    flex: 1;
-    padding: 10px 5px;
+    flex: 1; /* Di mobile, tombol akan mengisi ruang */
+    padding: 10px 15px;
     background-color: transparent;
     color: var(--text-secondary);
     border: none;
-    border-bottom: 3px solid transparent;
-    border-radius: 0;
+    border-radius: 8px; /* Sudut tombol yang rounded (pill style) */
     font-weight: 600;
     cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
+    transition: color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    white-space: nowrap; /* Agar teks tidak patah di mobile */
 }
 .nav-button:hover {
-    color: var(--primary-color);
+    background-color: rgba(0,0,0,0.05); /* Efek hover halus */
+    color: var(--text-color);
 }
 .nav-button.active {
+    background-color: var(--surface-color); /* Warna aktif yang solid */
     color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Efek bayangan halus */
 }
 
 /* === KONTEN HALAMAN (PAGE) === */
