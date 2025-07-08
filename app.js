@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let produkSetengahJadiList = [];
     let isEditingProduk = false;
     let editingProdukId = null;
-    let resepRowTarget = null; // Menyimpan baris resep mana yang sedang diisi
 
     // === DOM ELEMENTS ===
     const authContainer = document.getElementById('auth-container');
@@ -172,13 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
         else { editModal.classList.add('hidden'); loadBahanBaku(); }
     };
 
-    const addBahanFromModal = (bahan) => {
+    const addBahanFromModal = (bahan, jumlah = '') => {
         const row = document.createElement('tr');
         row.dataset.bahanId = bahan.id;
         row.dataset.source = bahan.source;
+        const jumlahValue = jumlah ? `value="${jumlah}"` : '';
         row.innerHTML = `
             <td>${bahan.nama}</td>
-            <td><input type="number" class="jumlah-resep" placeholder="0" min="0"></td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" ${jumlahValue} min="0"></td>
             <td class="biaya-resep-display">Rp 0,00</td>
             <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
         `;
@@ -422,21 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const addBahanFromModal = (bahan, jumlah = '') => {
-        const row = document.createElement('tr');
-        row.dataset.bahanId = bahan.id;
-        row.dataset.source = bahan.source;
-        const jumlahValue = jumlah ? `value="${jumlah}"` : '';
-        row.innerHTML = `
-            <td>${bahan.nama}</td>
-            <td><input type="number" class="jumlah-resep" placeholder="0" ${jumlahValue} min="0"></td>
-            <td class="biaya-resep-display">Rp 0,00</td>
-            <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
-        `;
-        resepTableBody.appendChild(row);
-        updatePerhitunganTotal();
-    };
-
     const hitungHppProduk = (produk) => {
         if (!produk || !produk.resep) return 0;
         return produk.resep.reduce((total, item) => {
@@ -454,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return total + (item.jumlah * hargaPerSatuan);
         }, 0);
     };
+
 
     // === EVENT LISTENERS ===
     const setupEventListeners = () => {
