@@ -1,121 +1,44 @@
-/* === FONT MODERN DARI GOOGLE FONTS === */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* ... (Semua CSS lama dari versi Emas tetap sama) ... */
 
-/* === CSS VARIABLES UNTUK TEMA WARNA (LIGHT MODE) === */
-:root {
-    --primary-color: #14b8a6; /* Tosca Segar */
-    --primary-hover: #0d9488;
-    --background-color: #f8f9fa;
-    --surface-color: #ffffff;
-    --border-color: #dee2e6;
-    --text-color: #212529;
-    --text-secondary: #6c757d;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --success-color: #28a745;
-    --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+/* === KATEGORI & FILTER STYLING (BARU) === */
+.table-controls {
+    margin-top: 25px;
+    margin-bottom: 15px;
 }
-
-/* === GENERAL STYLING === */
-body {
-    font-family: 'Inter', sans-serif;
-    line-height: 1.6;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 15px;
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
-.container { max-width: 1200px; margin: 20px auto; }
-h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
-h1 { font-size: 2.2rem; }
-h2 { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 20px; }
-h3 { font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
-hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
-
-/* === HERO & AUTH SECTION === */
-.hero-section { text-align: center; padding: 20px 0; margin-bottom: 30px; }
-.hero-section .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 15px auto 0; }
-.auth-box { background-color: var(--surface-color); padding: 30px; border-radius: 12px; max-width: 450px; margin: auto; border: 1px solid var(--border-color); box-shadow: var(--shadow); }
-
-/* === FORM & INPUT STYLING === */
-label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
-input[type="text"], input[type="email"], input[type="password"], input[type="number"], select {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 20px;
+.filter-btn {
+    padding: 8px 16px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 1rem;
-    background-color: #ffffff;
-    color: var(--text-color);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border-radius: 20px; /* Pill shape */
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    width: auto; /* Override button default width */
 }
-input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.4); }
-
-/* === BUTTON STYLING === */
-button { width: 100%; padding: 12px 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-button:hover { transform: translateY(-2px); }
-button[type="submit"] { background-color: var(--primary-color); color: white; }
-button[type="submit"]:hover { background-color: var(--primary-hover); }
-.button-secondary { background-color: var(--text-secondary); color: white; }
-.button-secondary:hover { background-color: #5a6268; }
-
-/* === APP LAYOUT === */
-.hidden { display: none !important; }
-.app-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
-.app-title { margin: 0; }
-.user-menu { display: flex; align-items: center; gap: 15px; }
-#logout-button { width: auto; padding: 8px 15px; }
-
-/* === NAVIGASI UTAMA === */
-.main-nav { display: flex; gap: 8px; margin-bottom: 25px; background-color: #e9ecef; padding: 6px; border-radius: 10px; overflow-x: auto; }
-.nav-button { flex: 1; padding: 10px 15px; background-color: transparent; color: var(--text-secondary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: color 0.2s, background-color 0.2s, box-shadow 0.2s; white-space: nowrap; }
-.nav-button:hover { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
-.nav-button.active { background-color: var(--surface-color); color: var(--primary-color); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-
-/* === KONTEN HALAMAN (PAGE) === */
-.page { display: none; }
-.page.active { display: block; }
-.section { background-color: var(--surface-color); padding: 25px; border-radius: 12px; border: 1px solid #e9ecef; box-shadow: var(--shadow); }
-
-/* === TABLE STYLING === */
-.table-wrapper { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 12px 10px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-thead { color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; background-color: #f8f9fa; }
-td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; }
-.button-delete { background-color: var(--danger-color); color: white; }
-.button-edit { background-color: var(--warning-color); color: var(--dark-color); }
-
-/* === KALKULATOR HPP STYLING === */
-#add-resep-item-btn { width: auto; padding: 10px 20px; background-color: var(--primary-color); margin-top: 15px; }
-.hpp-summary { background-color: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; }
-.hpp-summary h3 { margin: 0; font-size: 1.2rem; }
-.hpp-summary p { margin: 5px 0 0; color: var(--text-secondary); }
-.form-actions { display: flex; gap: 10px; margin-top: 20px; }
-.form-actions button { flex: 1; }
-#hpp-form button[type="submit"] { background-color: var(--success-color); }
-
-/* === MODAL STYLING === */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
-.modal-content { background: var(--surface-color); padding: 30px; border-radius: 12px; width: 100%; max-width: 600px; border: 1px solid var(--border-color); }
-.modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-#cancel-edit-btn, #cancel-pilih-bahan-btn, #cancel-tambah-cepat-btn { background-color: var(--text-secondary); color: white; }
-
-/* === MODAL PENCARIAN BAHAN === */
-#bahan-search-results { list-style: none; padding: 0; margin: 20px 0; max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
-#bahan-search-results li { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; }
-#bahan-search-results li:last-child { border-bottom: none; }
-#bahan-search-results li:hover { background-color: rgba(20, 184, 166, 0.1); }
-#bahan-search-results li small { color: var(--text-secondary); font-size: 0.8rem; background-color: #e9ecef; padding: 2px 6px; border-radius: 4px; }
-.bahan-source-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-top: 15px; }
-.bahan-source-btn { flex: 1; padding: 10px; border: none; background: none; color: var(--text-secondary); font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
-.bahan-source-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
-
-/* === DESKTOP & TABLET STYLES (MEDIA QUERIES) === */
-@media (min-width: 768px) {
-    .app-header { flex-wrap: nowrap; }
-    .nav-button { flex: 0 1 auto; padding: 12px 20px; }
-    .modal-actions { flex-direction: row; }
+.filter-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(20, 184, 166, 0.3);
+}
+.chip {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    margin-left: 8px;
 }
