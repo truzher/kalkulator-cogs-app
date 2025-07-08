@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let options = '<option value="">-- Pilih Bahan --</option>';
         masterBahanList.forEach(bahan => {
             const isSelected = bahan.id === bahanId ? 'selected' : '';
-            options += `<option value="${bahan.id}">${bahan.nama}</option>`;
+            options += `<option value="${bahan.id}" ${isSelected}>${bahan.nama}</option>`;
         });
         const jumlahValue = jumlah ? `value="${jumlah}"` : '';
         row.innerHTML = `
