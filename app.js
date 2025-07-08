@@ -17,30 +17,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signup-form');
     const logoutButton = document.getElementById('logout-button');
     const userEmailDisplay = document.getElementById('user-email-display');
+    
+    // Navigasi & Halaman
+    const mainNav = document.querySelector('.main-nav');
+    const pages = document.querySelectorAll('.page');
+
+    // Halaman Master Bahan
     const masterBahanForm = document.getElementById('master-bahan-form');
     const masterBahanTableBody = document.getElementById('master-bahan-table-body');
-    const editModal = document.getElementById('edit-modal');
-    const editBahanForm = document.getElementById('edit-bahan-form');
-    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    
+    // Halaman Kalkulator
+    const hppForm = document.getElementById('hpp-form');
     const addResepItemBtn = document.getElementById('add-resep-item-btn');
     const resepTableBody = document.getElementById('resep-table-body');
-    const hppForm = document.getElementById('hpp-form');
-    const produkTableBody = document.getElementById('produk-table-body');
     const produkNamaInput = document.getElementById('produk-nama');
     const produkKategoriInput = document.getElementById('produk-kategori');
-
-    // Input Biaya & Margin
     const overheadCostInput = document.getElementById('overhead-cost');
     const laborCostInput = document.getElementById('labor-cost');
     const errorCostPercentInput = document.getElementById('error-cost-percent');
     const targetMarginPercentInput = document.getElementById('target-margin-percent');
     const hargaJualAktualInput = document.getElementById('harga-jual-aktual');
-
-    // Display Hasil
     const totalCogsDisplay = document.getElementById('total-cogs-display');
     const saranHargaDisplay = document.getElementById('saran-harga-display');
     const profitDisplay = document.getElementById('profit-display');
     const profitPercentDisplay = document.getElementById('profit-percent-display');
+
+    // Halaman Daftar Produk
+    const produkTableBody = document.getElementById('produk-table-body');
+
+    // Modal Edit
+    const editModal = document.getElementById('edit-modal');
+    const editBahanForm = document.getElementById('edit-bahan-form');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    
 
     // === FUNGSI UTAMA ===
     const updateUI = (user) => {
@@ -286,21 +295,23 @@ document.addEventListener('DOMContentLoaded', () => {
         editingProdukId = null;
         hppForm.reset();
         resepTableBody.innerHTML = '';
-        totalCogsDisplay.textContent = formatRupiah(0);
-        saranHargaDisplay.textContent = formatRupiah(0);
-        profitDisplay.textContent = formatRupiah(0);
-        profitPercentDisplay.textContent = '0.00';
+        updatePerhitunganTotal();
     };
 
     // === EVENT LISTENERS ===
     const setupEventListeners = () => {
+        // Auth Listeners
         if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); } }); }
         if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error login: ' + error.message); } }); }
         if (logoutButton) { logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); }); }
+        
+        // Master Bahan Listeners
         if (masterBahanForm) { masterBahanForm.addEventListener('submit', simpanBahanBaku); }
         if (masterBahanTableBody) { masterBahanTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('button-delete')) { hapusBahanBaku(event.target.getAttribute('data-id')); } if (event.target.classList.contains('button-edit')) { openEditModal(event.target.getAttribute('data-id')); } }); }
         if (editBahanForm) { editBahanForm.addEventListener('submit', simpanPerubahanBahan); }
         if (cancelEditBtn) { cancelEditBtn.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
+        
+        // Kalkulator HPP Listeners
         if (addResepItemBtn) { addResepItemBtn.addEventListener('click', () => tambahBahanKeResep()); }
         if (hppForm) { hppForm.addEventListener('submit', simpanProduk); }
         if (produkTableBody) { produkTableBody.addEventListener('click', (event) => { const target = event.target; const id = target.getAttribute('data-id'); if (target.classList.contains('button-delete')) { hapusProduk(id); } if (target.classList.contains('button-edit')) { editProduk(id); } }); }
@@ -315,6 +326,25 @@ document.addEventListener('DOMContentLoaded', () => {
             resepTableBody.addEventListener('change', (event) => { if (event.target.classList.contains('bahan-resep-dropdown')) { updatePerhitunganTotal(); } });
             resepTableBody.addEventListener('input', (event) => { if (event.target.classList.contains('jumlah-resep')) { updatePerhitunganTotal(); } });
             resepTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('hapus-resep-item')) { event.target.closest('tr').remove(); updatePerhitunganTotal(); } });
+        }
+
+        // ▼▼▼ LOGIKA BARU UNTUK NAVIGASI ▼▼▼
+        if (mainNav) {
+            mainNav.addEventListener('click', (event) => {
+                if (event.target.classList.contains('nav-button')) {
+                    const targetPageId = event.target.getAttribute('data-page');
+                    
+                    // Sembunyikan semua halaman
+                    pages.forEach(page => page.classList.remove('active'));
+                    // Hapus 'active' dari semua tombol
+                    mainNav.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+
+                    // Tampilkan halaman yang dituju
+                    document.getElementById(targetPageId).classList.add('active');
+                    // Tambahkan 'active' ke tombol yang diklik
+                    event.target.classList.add('active');
+                }
+            });
         }
     };
     
