@@ -171,14 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
         else { editModal.classList.add('hidden'); loadBahanBaku(); }
     };
 
-    const addBahanFromModal = (bahan, jumlah = '') => {
+    const addBahanFromModal = (bahan) => {
         const row = document.createElement('tr');
         row.dataset.bahanId = bahan.id;
         row.dataset.source = bahan.source;
-        const jumlahValue = jumlah ? `value="${jumlah}"` : '';
         row.innerHTML = `
             <td>${bahan.nama}</td>
-            <td><input type="number" class="jumlah-resep" placeholder="0" ${jumlahValue} min="0"></td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" min="0"></td>
             <td class="biaya-resep-display">Rp 0,00</td>
             <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
         `;
