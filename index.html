@@ -42,16 +42,32 @@
             </div>
         </header>
 
-        <!-- Navigasi Utama Aplikasi -->
+        <!-- Navigasi Utama Aplikasi (URUTAN BARU) -->
         <nav class="main-nav">
-            <button class="nav-button active" data-page="page-kalkulator">Kalkulator</button>
+            <button class="nav-button active" data-page="page-bahan">Master Bahan</button>
+            <button class="nav-button" data-page="page-kalkulator">Kalkulator</button>
             <button class="nav-button" data-page="page-produk">Daftar Produk</button>
-            <button class="nav-button" data-page="page-bahan">Master Bahan</button>
         </nav>
 
         <main id="app-content">
-            <!-- Halaman 1: Kalkulator HPP -->
-            <div id="page-kalkulator" class="page active">
+            <!-- Halaman 1: Master Bahan Baku (SEKARANG HALAMAN UTAMA) -->
+            <div id="page-bahan" class="page active">
+                <div class="section">
+                    <h2>Master Bahan Baku</h2>
+                    <p>Kelola semua bahan mentah kamu di sini. Pastikan semua bahan sudah terdaftar sebelum membuat resep.</p>
+                    <form id="master-bahan-form">
+                        <!-- Konten form master bahan akan ada di sini -->
+                    </form>
+                    <div class="table-wrapper">
+                        <table id="master-bahan-table">
+                            <!-- Konten tabel master bahan akan ada di sini -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Halaman 2: Kalkulator HPP -->
+            <div id="page-kalkulator" class="page">
                 <div class="section">
                     <h2>Buat Resep & Hitung HPP</h2>
                     <form id="hpp-form">
@@ -60,28 +76,16 @@
                 </div>
             </div>
 
-            <!-- Halaman 2: Daftar Produk -->
+            <!-- Halaman 3: Daftar Produk -->
             <div id="page-produk" class="page">
                 <div class="section">
                     <h2>Daftar Produk Tersimpan</h2>
                     <p>Semua resep yang sudah kamu buat akan muncul di sini.</p>
-                    <table id="produk-table">
-                        <!-- Konten tabel daftar produk akan ada di sini -->
-                    </table>
-                </div>
-            </div>
-
-            <!-- Halaman 3: Master Bahan Baku -->
-            <div id="page-bahan" class="page">
-                <div class="section">
-                    <h2>Master Bahan Baku</h2>
-                    <p>Kelola semua bahan mentah kamu di sini.</p>
-                    <form id="master-bahan-form">
-                        <!-- Konten form master bahan akan ada di sini -->
-                    </form>
-                    <table id="master-bahan-table">
-                        <!-- Konten tabel master bahan akan ada di sini -->
-                    </table>
+                    <div class="table-wrapper">
+                        <table id="produk-table">
+                            <!-- Konten tabel daftar produk akan ada di sini -->
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
