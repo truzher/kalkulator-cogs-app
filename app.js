@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let produkSetengahJadiList = [];
     let isEditingProduk = false;
     let editingProdukId = null;
+    let resepRowTarget = null; // Menyimpan baris resep mana yang sedang diisi
 
     // === DOM ELEMENTS ===
     const authContainer = document.getElementById('auth-container');
@@ -57,6 +58,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBahanForm = document.getElementById('edit-bahan-form');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
 
+    // Modal Pilih Bahan
+    const pilihBahanModal = document.getElementById('pilih-bahan-modal');
+    const searchBahanInput = document.getElementById('search-bahan-input');
+    const bahanSearchResults = document.getElementById('bahan-search-results');
+    const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
+    const bahanSourceTabs = document.querySelector('.bahan-source-tabs');
+    const buatBahanBaruCepatBtn = document.getElementById('buat-bahan-baru-cepat-btn');
+
+    // Modal Tambah Bahan Cepat
+    const tambahBahanCepatModal = document.getElementById('tambah-bahan-cepat-modal');
+    const masterBahanCepatForm = document.getElementById('master-bahan-cepat-form');
+    const cancelTambahCepatBtn = document.getElementById('cancel-tambah-cepat-btn');
+
     // === FUNGSI UTAMA ===
     const updateUI = (user) => {
         if (user) {
@@ -100,16 +114,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const simpanBahanBaku = async (event) => {
+    const simpanBahanBaku = async (event, isCepat = false) => {
         event.preventDefault();
         if (!currentUser) { alert('Sesi tidak ditemukan.'); return; }
-        const nama = document.getElementById('bahan-nama').value;
-        const harga_beli_kemasan = document.getElementById('harga-beli-kemasan').value;
-        const isi_kemasan = document.getElementById('isi-kemasan').value;
-        const satuan_kemasan = document.getElementById('satuan-kemasan').value;
-        const { error } = await supabaseClient.from('bahan_baku').insert([{ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan, user_id: currentUser.id }]);
-        if (error) { console.error('Error menyimpan bahan baku:', error); alert('Gagal menyimpan bahan!'); } 
-        else { masterBahanForm.reset(); loadBahanBaku(); }
+        
+        const formPrefix = isCepat ? '-cepat' : '';
+        const formElement = isCepat ? masterBahanCepatForm : masterBahanForm;
+
+        const nama = document.getElementById(`bahan-nama${formPrefix}`).value;
+        const harga_beli_kemasan = document.getElementById(`harga-beli-kemasan${formPrefix}`).value;
+        const isi_kemasan = document.getElementById(`isi-kemasan${formPrefix}`).value;
+        const satuan_kemasan = document.getElementById(`satuan-kemasan${formPrefix}`).value;
+        
+        const { data, error } = await supabaseClient.from('bahan_baku').insert([{ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan, user_id: currentUser.id }]).select();
+        
+        if (error) { 
+            console.error('Error menyimpan bahan baku:', error); 
+            alert('Gagal menyimpan bahan!'); 
+        } else { 
+            formElement.reset(); 
+            await loadBahanBaku();
+            if (isCepat) {
+                tambahBahanCepatModal.classList.add('hidden');
+                tampilkanHasilPencarian(nama, 'bahan_baku');
+            }
+        }
     };
 
     const hapusBahanBaku = async (id) => {
@@ -143,17 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
         else { editModal.classList.add('hidden'); loadBahanBaku(); }
     };
 
-    const tambahBahanKeResep = (bahanId = '', jumlah = '') => {
+    const tambahBahanKeResep = (bahan) => {
         const row = document.createElement('tr');
-        let options = '<option value="">-- Pilih Bahan --</option>';
-        masterBahanList.forEach(bahan => {
-            const isSelected = bahan.id === bahanId ? 'selected' : '';
-            options += `<option value="${bahan.id}">${bahan.nama}</option>`;
-        });
-        const jumlahValue = jumlah ? `value="${jumlah}"` : '';
+        row.dataset.bahanId = bahan.id;
+        row.dataset.source = bahan.source;
         row.innerHTML = `
-            <td><select class="bahan-resep-dropdown">${options}</select></td>
-            <td><input type="number" class="jumlah-resep" placeholder="0" ${jumlahValue} min="0"></td>
+            <td>${bahan.nama}</td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" min="0"></td>
             <td class="biaya-resep-display">Rp 0,00</td>
             <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
         `;
@@ -163,14 +188,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const updatePerhitunganTotal = () => {
         let totalBiayaBahan = 0;
         resepTableBody.querySelectorAll('tr').forEach(row => {
-            const dropdown = row.querySelector('.bahan-resep-dropdown');
             const jumlahInput = row.querySelector('.jumlah-resep');
             const biayaDisplay = row.querySelector('.biaya-resep-display');
-            const bahanId = dropdown.value;
+            const bahanId = row.dataset.bahanId;
+            const source = row.dataset.source;
             const jumlah = parseFloat(jumlahInput.value) || 0;
-            const bahanTerpilih = masterBahanList.find(b => b.id === bahanId);
-            if (bahanTerpilih && bahanTerpilih.isi_kemasan > 0) {
-                const hargaPerSatuan = bahanTerpilih.harga_beli_kemasan / bahanTerpilih.isi_kemasan;
+            
+            const listToSearch = source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+            const bahanTerpilih = listToSearch.find(b => b.id === bahanId);
+
+            if (bahanTerpilih) {
+                let hargaPerSatuan = 0;
+                if(source === 'bahan_baku'){
+                    if(bahanTerpilih.isi_kemasan > 0) hargaPerSatuan = bahanTerpilih.harga_beli_kemasan / bahanTerpilih.isi_kemasan;
+                } else { // Produk Setengah Jadi
+                    const hppBahanBiang = hitungHppProduk(bahanTerpilih);
+                    if(bahanTerpilih.hasil_jadi_jumlah > 0) {
+                        hargaPerSatuan = hppBahanBiang / bahanTerpilih.hasil_jadi_jumlah;
+                    }
+                }
+
                 const biayaBahan = jumlah * hargaPerSatuan;
                 biayaDisplay.textContent = formatRupiah(biayaBahan);
                 totalBiayaBahan += biayaBahan;
@@ -222,10 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!namaProduk) { alert('Nama produk tidak boleh kosong!'); return; }
         const resepItems = [];
         resepTableBody.querySelectorAll('tr').forEach(row => {
-            const bahanId = row.querySelector('.bahan-resep-dropdown').value;
+            const bahanId = row.dataset.bahanId;
             const jumlah = parseFloat(row.querySelector('.jumlah-resep').value) || 0;
             if (bahanId && jumlah > 0) {
-                resepItems.push({ bahan_id: bahanId, jumlah: jumlah });
+                resepItems.push({ bahan_id: bahanId, jumlah: jumlah, source: row.dataset.source });
             }
         });
         if (resepItems.length === 0) { alert('Resep tidak boleh kosong!'); return; }
@@ -235,6 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
             resep: resepItems,
             jenis_produk: jenisProdukInput.value,
             kategori: produkKategoriInput.value,
+            hasil_jadi_jumlah: parseFloat(hasilJadiJumlahInput.value) || 0,
+            hasil_jadi_satuan: hasilJadiSatuanInput.value,
             overhead_cost: parseFloat(overheadCostInput.value) || 0,
             overhead_cost_type: overheadTypeInput.value,
             labor_cost: parseFloat(laborCostInput.value) || 0,
@@ -258,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             alert(`Produk berhasil ${isEditingProduk ? 'diperbarui' : 'disimpan'}!`);
             resetFormHpp();
-            loadProduk();
+            await loadProduk();
         }
     };
 
@@ -301,6 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
         produkNamaInput.value = produk.nama_produk;
         produkKategoriInput.value = produk.kategori || 'Minuman';
         jenisProdukInput.value = produk.jenis_produk || 'Produk Jadi';
+        hasilJadiJumlahInput.value = produk.hasil_jadi_jumlah || '';
+        hasilJadiSatuanInput.value = produk.hasil_jadi_satuan || '';
         overheadCostInput.value = produk.overhead_cost || 0;
         overheadTypeInput.value = produk.overhead_cost_type || 'nominal';
         laborCostInput.value = produk.labor_cost || 0;
@@ -310,11 +351,15 @@ document.addEventListener('DOMContentLoaded', () => {
         resepTableBody.innerHTML = '';
         if (produk.resep) {
             produk.resep.forEach(item => {
-                tambahBahanKeResep(item.bahan_id, item.jumlah);
+                const listToSearch = item.source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+                const bahan = listToSearch.find(b => b.id === item.bahan_id);
+                if (bahan) {
+                    addBahanFromModal(bahan, item.jumlah);
+                }
             });
         }
         updatePerhitunganTotal();
-        toggleKalkulatorMode(); // Panggil fungsi untuk sesuaikan tampilan
+        toggleKalkulatorMode();
         mainNav.querySelector('[data-page="page-kalkulator"]').click();
         document.getElementById('kalkulator-container').scrollIntoView({ behavior: 'smooth' });
     };
@@ -324,22 +369,89 @@ document.addEventListener('DOMContentLoaded', () => {
         editingProdukId = null;
         hppForm.reset();
         resepTableBody.innerHTML = '';
-        updatePerhitunganTotal();
         toggleKalkulatorMode();
+        updatePerhitunganTotal();
     };
 
-    // FUNGSI BARU: Mengatur tampilan form berdasarkan tipe produk
     const toggleKalkulatorMode = () => {
         const tipe = jenisProdukInput.value;
         if (tipe === 'Produk Setengah Jadi') {
             hasilJadiContainer.classList.remove('hidden');
             hargaJualContainer.classList.add('hidden');
             saranHargaWrapper.classList.add('hidden');
-        } else { // Produk Jadi
+        } else {
             hasilJadiContainer.classList.add('hidden');
             hargaJualContainer.classList.remove('hidden');
             saranHargaWrapper.classList.remove('hidden');
         }
+    };
+
+    const openPilihBahanModal = () => {
+        tampilkanHasilPencarian();
+        pilihBahanModal.classList.remove('hidden');
+        searchBahanInput.focus();
+    };
+
+    const tampilkanHasilPencarian = (query = '', source = 'bahan_baku') => {
+        bahanSearchResults.innerHTML = '';
+        const listToSearch = source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+        const filteredList = listToSearch.filter(item => item.nama && item.nama.toLowerCase().includes(query.toLowerCase()));
+        if (filteredList.length === 0) {
+            bahanSearchResults.innerHTML = '<li>Bahan tidak ditemukan.</li>';
+            return;
+        }
+        filteredList.forEach(item => {
+            const li = document.createElement('li');
+            li.dataset.id = item.id;
+            li.dataset.source = source;
+            li.dataset.nama = item.nama;
+            let hargaPerSatuanDasar = 0;
+            let satuan = '';
+            if(source === 'bahan_baku'){
+                if(item.isi_kemasan > 0) hargaPerSatuanDasar = item.harga_beli_kemasan / item.isi_kemasan;
+                satuan = item.satuan_kemasan;
+            } else {
+                const hppBahanBiang = hitungHppProduk(item);
+                if(item.hasil_jadi_jumlah > 0) hargaPerSatuanDasar = hppBahanBiang / item.hasil_jadi_jumlah;
+                satuan = item.hasil_jadi_satuan;
+            }
+            li.innerHTML = `<span>${item.nama}</span><small>${formatRupiah(hargaPerSatuanDasar)} / ${satuan}</small>`;
+            bahanSearchResults.appendChild(li);
+        });
+    };
+
+    const addBahanFromModal = (bahan, jumlah = '') => {
+        const row = document.createElement('tr');
+        row.dataset.bahanId = bahan.id;
+        row.dataset.source = bahan.source;
+        const jumlahValue = jumlah ? `value="${jumlah}"` : '';
+        row.innerHTML = `
+            <td>${bahan.nama}</td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" ${jumlahValue} min="0"></td>
+            <td class="biaya-resep-display">Rp 0,00</td>
+            <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
+        `;
+        resepTableBody.appendChild(row);
+        updatePerhitunganTotal();
+    };
+
+    const hitungHppProduk = (produk) => {
+        if (!produk || !produk.resep) return 0;
+        return produk.resep.reduce((total, item) => {
+            const listToSearch = item.source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+            const bahan = listToSearch.find(b => b.id === item.bahan_id);
+            if (!bahan) return total;
+
+            let hargaPerSatuan = 0;
+            if (item.source === 'bahan_baku') {
+                if (bahan.isi_kemasan > 0) hargaPerSatuan = bahan.harga_beli_kemasan / bahan.isi_kemasan;
+            } else {
+                // Rekursif untuk menghitung HPP bahan biang
+                const hppBahanBiang = hitungHppProduk(bahan);
+                if (bahan.hasil_jadi_jumlah > 0) hargaPerSatuan = hppBahanBiang / bahan.hasil_jadi_jumlah;
+            }
+            return total + (item.jumlah * hargaPerSatuan);
+        }, 0);
     };
 
 
@@ -348,27 +460,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); } }); }
         if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error login: ' + error.message); } }); }
         if (logoutButton) { logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); }); }
-        if (masterBahanForm) { masterBahanForm.addEventListener('submit', simpanBahanBaku); }
+        if (masterBahanForm) { masterBahanForm.addEventListener('submit', (e) => simpanBahanBaku(e, false)); }
+        if (masterBahanCepatForm) { masterBahanCepatForm.addEventListener('submit', (e) => simpanBahanBaku(e, true)); }
         if (masterBahanTableBody) { masterBahanTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('button-delete')) { hapusBahanBaku(event.target.getAttribute('data-id')); } if (event.target.classList.contains('button-edit')) { openEditModal(event.target.getAttribute('data-id')); } }); }
         if (editBahanForm) { editBahanForm.addEventListener('submit', simpanPerubahanBahan); }
         if (cancelEditBtn) { cancelEditBtn.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
-        if (addResepItemBtn) { addResepItemBtn.addEventListener('click', () => tambahBahanKeResep()); }
+        if (addResepItemBtn) { addResepItemBtn.addEventListener('click', openPilihBahanModal); }
         if (hppForm) { hppForm.addEventListener('submit', simpanProduk); }
         if (produkTableBody) { produkTableBody.addEventListener('click', (event) => { const target = event.target; const id = target.getAttribute('data-id'); if (target.classList.contains('button-delete')) { hapusProduk(id); } if (target.classList.contains('button-edit')) { editProduk(id); } }); }
         if (resetHppBtn) { resetHppBtn.addEventListener('click', resetFormHpp); }
-        
-        // Listener baru untuk dropdown tipe produk
+        if (cancelPilihBahanBtn) { cancelPilihBahanBtn.addEventListener('click', () => pilihBahanModal.classList.add('hidden')); }
+        if (buatBahanBaruCepatBtn) { buatBahanBaruCepatBtn.addEventListener('click', () => tambahBahanCepatModal.classList.remove('hidden')); }
+        if (cancelTambahCepatBtn) { cancelTambahCepatBtn.addEventListener('click', () => tambahBahanCepatModal.classList.add('hidden')); }
+        if (searchBahanInput) { searchBahanInput.addEventListener('input', () => tampilkanHasilPencarian(searchBahanInput.value, document.querySelector('.bahan-source-btn.active').dataset.source)); }
+        if (bahanSourceTabs) { bahanSourceTabs.addEventListener('click', (event) => { if (event.target.classList.contains('bahan-source-btn')) { bahanSourceTabs.querySelectorAll('.bahan-source-btn').forEach(btn => btn.classList.remove('active')); event.target.classList.add('active'); tampilkanHasilPencarian(searchBahanInput.value, event.target.dataset.source); } }); }
+        if (bahanSearchResults) { bahanSearchResults.addEventListener('click', (event) => { const targetLi = event.target.closest('li'); if (targetLi && targetLi.dataset.id) { const bahan = { id: targetLi.dataset.id, nama: targetLi.dataset.nama, source: targetLi.dataset.source, }; addBahanFromModal(bahan); pilihBahanModal.classList.add('hidden'); } }); }
         if (jenisProdukInput) { jenisProdukInput.addEventListener('change', toggleKalkulatorMode); }
 
         const calculationInputs = [overheadCostInput, overheadTypeInput, laborCostInput, errorCostPercentInput, targetMarginPercentInput, hargaJualAktualInput];
-        calculationInputs.forEach(element => {
-            if (element) {
-                element.addEventListener('input', updatePerhitunganTotal);
-                element.addEventListener('change', updatePerhitunganTotal);
-            }
-        });
+        calculationInputs.forEach(element => { if (element) { element.addEventListener('input', updatePerhitunganTotal); element.addEventListener('change', updatePerhitunganTotal); } });
         if (resepTableBody) {
-            resepTableBody.addEventListener('change', (event) => { if (event.target.classList.contains('bahan-resep-dropdown')) { updatePerhitunganTotal(); } });
             resepTableBody.addEventListener('input', (event) => { if (event.target.classList.contains('jumlah-resep')) { updatePerhitunganTotal(); } });
             resepTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('hapus-resep-item')) { event.target.closest('tr').remove(); updatePerhitunganTotal(); } });
         }
@@ -380,6 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     mainNav.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
                     document.getElementById(targetPageId).classList.add('active');
                     event.target.classList.add('active');
+                    if(targetPageId === 'page-kalkulator') resetFormHpp();
                 }
             });
         }
