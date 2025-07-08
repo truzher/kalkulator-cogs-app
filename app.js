@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const produkKategoriInput = document.getElementById('produk-kategori');
     const mainNav = document.querySelector('.main-nav');
     const pages = document.querySelectorAll('.page');
+    const resetHppBtn = document.getElementById('reset-hpp-btn');
 
     // Input Biaya & Margin
     const overheadCostInput = document.getElementById('overhead-cost');
@@ -138,9 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const isSelected = bahan.id === bahanId ? 'selected' : '';
             options += `<option value="${bahan.id}">${bahan.nama}</option>`;
         });
+        const jumlahValue = jumlah ? `value="${jumlah}"` : '';
         row.innerHTML = `
             <td><select class="bahan-resep-dropdown">${options}</select></td>
-            <td><input type="number" class="jumlah-resep" placeholder="0" value="${jumlah}" min="0"></td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" ${jumlahValue} min="0"></td>
             <td class="biaya-resep-display">Rp 0,00</td>
             <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
         `;
@@ -296,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updatePerhitunganTotal();
         
-        // Pindah ke halaman kalkulator
         mainNav.querySelector('[data-page="page-kalkulator"]').click();
         document.getElementById('kalkulator-container').scrollIntoView({ behavior: 'smooth' });
     };
@@ -321,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addResepItemBtn) { addResepItemBtn.addEventListener('click', () => tambahBahanKeResep()); }
         if (hppForm) { hppForm.addEventListener('submit', simpanProduk); }
         if (produkTableBody) { produkTableBody.addEventListener('click', (event) => { const target = event.target; const id = target.getAttribute('data-id'); if (target.classList.contains('button-delete')) { hapusProduk(id); } if (target.classList.contains('button-edit')) { editProduk(id); } }); }
+        if (resetHppBtn) { resetHppBtn.addEventListener('click', resetFormHpp); }
 
         const calculationInputs = [overheadCostInput, overheadTypeInput, laborCostInput, errorCostPercentInput, targetMarginPercentInput, hargaJualAktualInput];
         calculationInputs.forEach(element => {
