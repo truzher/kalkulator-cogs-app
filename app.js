@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let produkSetengahJadiList = [];
     let isEditingProduk = false;
     let editingProdukId = null;
-    let resepRowTarget = null; // Menyimpan baris resep mana yang sedang diisi
 
     // === DOM ELEMENTS ===
     const authContainer = document.getElementById('auth-container');
@@ -303,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadProduk = async () => {
-        const { data, error } = await supabaseClient.from('produk').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabaseClient.from('produk').select('*, resep:produk(resep)').order('created_at', { ascending: false });
         if (error) { console.error('Error mengambil data produk:', error); return; }
         
         const produkJadi = data.filter(p => p.jenis_produk === 'Produk Jadi');
