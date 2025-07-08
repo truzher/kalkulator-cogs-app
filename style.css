@@ -110,4 +110,8 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
 @media (min-width: 768px) {
     .app-header { flex-wrap: nowrap; }
     .nav-button { flex: 0 1 auto; padding: 12px 20px; }
+    .main-layout { flex-direction: row; align-items: flex-start; }
+    .main-column { flex: 2; }
+    .sidebar-column { flex: 1; }
+    .modal-actions { flex-direction: row; }
 }
