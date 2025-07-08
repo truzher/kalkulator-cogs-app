@@ -1,237 +1,500 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator COGS F&B by HABB</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+document.addEventListener('DOMContentLoaded', () => {
+    // === KONFIGURASI SUPABASE ===
+    const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-<div class="container">
-    <!-- Bagian Autentikasi -->
-    <div id="auth-container">
-        <div class="hero-section">
-            <h1>Hitung HPP Jadi Gampang</h1>
-            <p class="subtitle">Ucapkan selamat tinggal pada spreadsheet rumit. Atur harga jual, lacak biaya, dan maksimalkan profit bisnismu dengan mudah.</p>
-        </div>
-        <div class="auth-box">
-            <form id="login-form" class="auth-form">
-                <h2>Masuk Akun</h2>
-                <input type="email" id="login-email" placeholder="Email kamu" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
-            <hr>
-            <form id="signup-form" class="auth-form">
-                <h2>Belum Punya Akun? Daftar Gratis!</h2>
-                <input type="email" id="signup-email" placeholder="Email kamu" required>
-                <input type="password" id="signup-password" placeholder="Password (min. 6 karakter)" required>
-                <button type="submit" class="button-secondary">Daftar Sekarang</button>
-            </form>
-        </div>
-    </div>
+    // === VARIABEL GLOBAL ===
+    let currentUser = null;
+    let masterBahanList = [];
+    let produkSetengahJadiList = [];
+    let isEditingProduk = false;
+    let editingProdukId = null;
+    let resepRowTarget = null; // Menyimpan baris resep mana yang sedang diisi
 
-    <!-- Bagian Aplikasi Utama -->
-    <div id="app-container" class="hidden">
-        <header class="app-header">
-            <h1 class="app-title">Kalkulator HPP</h1>
-            <div class="user-menu">
-                <span id="user-email-display"></span>
-                <button id="logout-button">Logout</button>
-            </div>
-        </header>
+    // === DOM ELEMENTS ===
+    const authContainer = document.getElementById('auth-container');
+    const appContainer = document.getElementById('app-container');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const logoutButton = document.getElementById('logout-button');
+    const userEmailDisplay = document.getElementById('user-email-display');
+    const mainNav = document.querySelector('.main-nav');
+    const pages = document.querySelectorAll('.page');
+    
+    // Halaman Master Bahan
+    const masterBahanForm = document.getElementById('master-bahan-form');
+    const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+    
+    // Halaman Kalkulator
+    const hppForm = document.getElementById('hpp-form');
+    const jenisProdukInput = document.getElementById('jenis-produk-input');
+    const produkKategoriInput = document.getElementById('produk-kategori');
+    const produkNamaInput = document.getElementById('produk-nama');
+    const hasilJadiContainer = document.getElementById('hasil-jadi-container');
+    const hasilJadiJumlahInput = document.getElementById('hasil-jadi-jumlah');
+    const hasilJadiSatuanInput = document.getElementById('hasil-jadi-satuan');
+    const addResepItemBtn = document.getElementById('add-resep-item-btn');
+    const resepTableBody = document.getElementById('resep-table-body');
+    const hargaJualContainer = document.getElementById('harga-jual-container');
+    const overheadCostInput = document.getElementById('overhead-cost');
+    const overheadTypeInput = document.getElementById('overhead-type');
+    const laborCostInput = document.getElementById('labor-cost');
+    const errorCostPercentInput = document.getElementById('error-cost-percent');
+    const targetMarginPercentInput = document.getElementById('target-margin-percent');
+    const hargaJualAktualInput = document.getElementById('harga-jual-aktual');
+    const totalCogsDisplay = document.getElementById('total-cogs-display');
+    const saranHargaWrapper = document.getElementById('saran-harga-wrapper');
+    const saranHargaDisplay = document.getElementById('saran-harga-display');
+    const profitDisplay = document.getElementById('profit-display');
+    const profitPercentDisplay = document.getElementById('profit-percent-display');
+    const resetHppBtn = document.getElementById('reset-hpp-btn');
+
+    // Halaman Daftar Produk
+    const produkTableBody = document.getElementById('produk-table-body');
+
+    // Modal Edit Bahan Baku
+    const editModal = document.getElementById('edit-modal');
+    const editBahanForm = document.getElementById('edit-bahan-form');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+    // Modal Pilih Bahan
+    const pilihBahanModal = document.getElementById('pilih-bahan-modal');
+    const searchBahanInput = document.getElementById('search-bahan-input');
+    const bahanSearchResults = document.getElementById('bahan-search-results');
+    const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
+    const bahanSourceTabs = document.querySelector('.bahan-source-tabs');
+    const buatBahanBaruCepatBtn = document.getElementById('buat-bahan-baru-cepat-btn');
+
+    // Modal Tambah Bahan Cepat
+    const tambahBahanCepatModal = document.getElementById('tambah-bahan-cepat-modal');
+    const masterBahanCepatForm = document.getElementById('master-bahan-cepat-form');
+    const cancelTambahCepatBtn = document.getElementById('cancel-tambah-cepat-btn');
+
+    // === FUNGSI UTAMA ===
+    const updateUI = (user) => {
+        if (user) {
+            currentUser = user;
+            authContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            userEmailDisplay.textContent = user.email;
+            loadBahanBaku();
+            loadProduk();
+        } else {
+            currentUser = null;
+            authContainer.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+        }
+    };
+
+    // === FUNGSI-FUNGSI APLIKASI ===
+
+    const formatRupiah = (angka) => {
+        if (isNaN(angka)) return 'Rp 0,00';
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(angka);
+    };
+
+    const loadBahanBaku = async () => {
+        const { data, error } = await supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        if (error) { console.error('Error mengambil data bahan baku:', error); return; }
+        masterBahanList = data;
+        masterBahanTableBody.innerHTML = '';
+        data.forEach(bahan => {
+            const hargaPerSatuanDasar = (bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${bahan.nama}</td>
+                <td>${formatRupiah(hargaPerSatuanDasar)} / ${bahan.satuan_kemasan}</td>
+                <td>
+                    <button class="button-edit" data-id="${bahan.id}">Edit</button>
+                    <button class="button-delete" data-id="${bahan.id}">Hapus</button>
+                </td>
+            `;
+            masterBahanTableBody.appendChild(row);
+        });
+    };
+
+    const simpanBahanBaku = async (event, isCepat = false) => {
+        event.preventDefault();
+        if (!currentUser) { alert('Sesi tidak ditemukan.'); return; }
         
-        <nav class="main-nav">
-            <button class="nav-button active" data-page="page-bahan">Master Bahan</button>
-            <button class="nav-button" data-page="page-kalkulator">Kalkulator</button>
-            <button class="nav-button" data-page="page-produk">Daftar Produk</button>
-        </nav>
+        const formPrefix = isCepat ? '-cepat' : '';
+        const formElement = isCepat ? masterBahanCepatForm : masterBahanForm;
 
-        <main id="app-content">
-            <div id="page-bahan" class="page active">
-                <div class="section">
-                    <h2>Master Bahan Baku</h2>
-                    <p>Kelola semua bahan mentah kamu di sini. Pastikan semua bahan sudah terdaftar sebelum membuat resep.</p>
-                    <form id="master-bahan-form">
-                        <div class="input-group">
-                            <div style="flex: 2;"><label for="bahan-nama">Nama Bahan</label><input type="text" id="bahan-nama" placeholder="cth: Gula Aren Cair" required></div>
-                            <div style="flex: 1.5;"><label for="harga-beli-kemasan">Harga Beli Kemasan (Rp)</label><input type="number" id="harga-beli-kemasan" placeholder="0" required></div>
-                        </div>
-                        <div class="input-group">
-                            <div style="flex: 1;"><label for="isi-kemasan">Isi Kemasan</label><input type="number" id="isi-kemasan" placeholder="0" required></div>
-                            <div style="flex: 1;"><label for="satuan-kemasan">Satuan Kemasan</label><input type="text" id="satuan-kemasan" placeholder="cth: ml, gram" required></div>
-                        </div>
-                        <button type="submit">Simpan Bahan</button>
-                    </form>
-                    <div class="table-wrapper">
-                        <table id="master-bahan-table">
-                            <thead><tr><th>Nama Bahan</th><th>Harga/Satuan Dasar</th><th>Aksi</th></tr></thead>
-                            <tbody id="master-bahan-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        const nama = document.getElementById(`bahan-nama${formPrefix}`).value;
+        const harga_beli_kemasan = document.getElementById(`harga-beli-kemasan${formPrefix}`).value;
+        const isi_kemasan = document.getElementById(`isi-kemasan${formPrefix}`).value;
+        const satuan_kemasan = document.getElementById(`satuan-kemasan${formPrefix}`).value;
+        
+        const { data, error } = await supabaseClient.from('bahan_baku').insert([{ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan, user_id: currentUser.id }]).select();
+        
+        if (error) { 
+            console.error('Error menyimpan bahan baku:', error); 
+            alert('Gagal menyimpan bahan!'); 
+        } else { 
+            formElement.reset(); 
+            await loadBahanBaku();
+            if (isCepat) {
+                tambahBahanCepatModal.classList.add('hidden');
+                tampilkanHasilPencarian(nama, 'bahan_baku');
+            }
+        }
+    };
 
-            <div id="page-kalkulator" class="page">
-                <div class="section">
-                    <h2>Buat Resep & Hitung HPP</h2>
-                    <form id="hpp-form">
-                        <div class="input-group">
-                             <div style="flex: 1.5;">
-                                <label for="jenis-produk-input">Tipe Produk</label>
-                                <select id="jenis-produk-input">
-                                    <option value="Produk Jadi">Produk Jadi (Dijual)</option>
-                                    <option value="Produk Setengah Jadi">Produk Setengah Jadi (Biang)</option>
-                                </select>
-                            </div>
-                            <div style="flex: 1;">
-                                <label for="produk-kategori">Kategori</label>
-                                <select id="produk-kategori" required>
-                                    <option value="Minuman">Minuman</option>
-                                    <option value="Makanan">Makanan</option>
-                                    <option value="Lainnya">Lainnya</option>
-                                </select>
-                            </div>
-                        </div>
-                        <label for="produk-nama">Nama Produk</label>
-                        <input type="text" id="produk-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
-                        
-                        <div id="hasil-jadi-container" class="hidden">
-                             <h3>Info Hasil Jadi (Yield)</h3>
-                             <div class="input-group">
-                                 <div>
-                                     <label for="hasil-jadi-jumlah">Jumlah Hasil Jadi</label>
-                                     <input type="number" id="hasil-jadi-jumlah" placeholder="cth: 1000">
-                                 </div>
-                                 <div>
-                                     <label for="hasil-jadi-satuan">Satuan Hasil Jadi</label>
-                                     <input type="text" id="hasil-jadi-satuan" placeholder="cth: ml, gram">
-                                 </div>
-                             </div>
-                        </div>
+    const hapusBahanBaku = async (id) => {
+        if (confirm("Yakin mau hapus bahan ini?")) {
+            const { error } = await supabaseClient.from('bahan_baku').delete().eq('id', id);
+            if (error) { console.error('Error menghapus bahan baku:', error); alert('Gagal menghapus bahan!'); } 
+            else { loadBahanBaku(); }
+        }
+    };
 
-                        <h3>Bahan Resep</h3>
-                        <div class="table-wrapper">
-                            <table id="resep-table">
-                                <thead><tr><th>Bahan</th><th>Jumlah</th><th>Biaya</th><th>Aksi</th></tr></thead>
-                                <tbody id="resep-table-body"></tbody>
-                            </table>
-                        </div>
-                        <button type="button" id="add-resep-item-btn">+ Tambah Bahan</button>
-                        <hr>
+    const openEditModal = async (id) => {
+        const { data, error } = await supabaseClient.from('bahan_baku').select('*').eq('id', id).single();
+        if (error) { console.error('Error mengambil data untuk diedit:', error); return; }
+        document.getElementById('edit-bahan-id').value = data.id;
+        document.getElementById('edit-bahan-nama').value = data.nama;
+        document.getElementById('edit-harga-beli-kemasan').value = data.harga_beli_kemasan;
+        document.getElementById('edit-isi-kemasan').value = data.isi_kemasan;
+        document.getElementById('edit-satuan-kemasan').value = data.satuan_kemasan;
+        editModal.classList.remove('hidden');
+    };
 
-                        <div id="harga-jual-container">
-                            <h3>Biaya & Penentuan Harga</h3>
-                            <div class="input-group">
-                                <div style="flex: 2;"><label for="overhead-cost">Biaya Overhead</label><input type="number" id="overhead-cost" placeholder="0"></div>
-                                <div style="flex: 1;"><label for="overhead-type">Tipe</label><select id="overhead-type"><option value="nominal">Rp</option><option value="persen">%</option></select></div>
-                            </div>
-                            <div class="input-group">
-                                <div><label for="labor-cost">Tenaga Kerja/Porsi (Rp)</label><input type="number" id="labor-cost" placeholder="0"></div>
-                                <div><label for="error-cost-percent">Error Cost (%)</label><input type="number" id="error-cost-percent" placeholder="0"></div>
-                            </div>
-                            <div class="input-group">
-                                <div><label for="target-margin-percent">Target Margin (%)</label><input type="number" id="target-margin-percent" placeholder="0"></div>
-                                <div><label for="harga-jual-aktual">Harga Jual Aktual (Final)</label><input type="number" id="harga-jual-aktual" placeholder="0" required></div>
-                            </div>
-                        </div>
+    const simpanPerubahanBahan = async (event) => {
+        event.preventDefault();
+        const id = document.getElementById('edit-bahan-id').value;
+        const nama = document.getElementById('edit-bahan-nama').value;
+        const harga_beli_kemasan = document.getElementById('edit-harga-beli-kemasan').value;
+        const isi_kemasan = document.getElementById('edit-isi-kemasan').value;
+        const satuan_kemasan = document.getElementById('edit-satuan-kemasan').value;
+        const { error } = await supabaseClient.from('bahan_baku').update({ nama, harga_beli_kemasan, isi_kemasan, satuan_kemasan }).eq('id', id);
+        if (error) { console.error('Error menyimpan perubahan:', error); alert('Gagal menyimpan perubahan!'); } 
+        else { editModal.classList.add('hidden'); loadBahanBaku(); }
+    };
 
-                        <div class="hpp-summary">
-                            <h3>Total HPP (Modal): <span id="total-cogs-display">Rp 0,00</span></h3>
-                            <div id="saran-harga-wrapper">
-                                <h3 class="saran-harga">Saran Harga Jual: <span id="saran-harga-display">Rp 0,00</span></h3>
-                                <p>Profit: <span id="profit-display">Rp 0,00</span> (<span id="profit-percent-display">0.00</span>%)</p>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" id="reset-hpp-btn" class="button-secondary">Reset Form</button>
-                            <button type="submit">Simpan Produk</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    const addBahanFromModal = (bahan) => {
+        const row = document.createElement('tr');
+        row.dataset.bahanId = bahan.id;
+        row.dataset.source = bahan.source;
+        row.innerHTML = `
+            <td>${bahan.nama}</td>
+            <td><input type="number" class="jumlah-resep" placeholder="0" min="0"></td>
+            <td class="biaya-resep-display">Rp 0,00</td>
+            <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
+        `;
+        resepTableBody.appendChild(row);
+        updatePerhitunganTotal();
+    };
 
-            <div id="page-produk" class="page">
-                <div class="section">
-                    <h2>Daftar Produk Tersimpan</h2>
-                    <div class="table-wrapper">
-                        <table id="produk-table">
-                            <thead><tr><th>Nama Produk</th><th>Kategori</th><th>Harga Jual</th><th>Aksi</th></tr></thead>
-                            <tbody id="produk-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-</div>
+    const updatePerhitunganTotal = () => {
+        let totalBiayaBahan = 0;
+        resepTableBody.querySelectorAll('tr').forEach(row => {
+            const jumlahInput = row.querySelector('.jumlah-resep');
+            const biayaDisplay = row.querySelector('.biaya-resep-display');
+            const bahanId = row.dataset.bahanId;
+            const source = row.dataset.source;
+            const jumlah = parseFloat(jumlahInput.value) || 0;
+            
+            const listToSearch = source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+            const bahanTerpilih = listToSearch.find(b => b.id === bahanId);
 
-<!-- Modal Edit Bahan Baku -->
-<div id="edit-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h2>Edit Bahan Baku</h2>
-        <form id="edit-bahan-form">
-            <input type="hidden" id="edit-bahan-id">
-            <label for="edit-bahan-nama">Nama Bahan</label>
-            <input type="text" id="edit-bahan-nama" required>
-            <label for="edit-harga-beli-kemasan">Harga Beli Kemasan (Rp)</label>
-            <input type="number" id="edit-harga-beli-kemasan" required>
-            <div class="input-group">
-                <div><label for="edit-isi-kemasan">Isi</label><input type="number" id="edit-isi-kemasan" required></div>
-                <div><label for="edit-satuan-kemasan">Satuan</label><input type="text" id="edit-satuan-kemasan" required></div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" id="cancel-edit-btn">Batal</button>
-                <button type="submit">Simpan Perubahan</button>
-            </div>
-        </form>
-    </div>
-</div>
+            if (bahanTerpilih) {
+                let hargaPerSatuan = 0;
+                if(source === 'bahan_baku'){
+                    if(bahanTerpilih.isi_kemasan > 0) hargaPerSatuan = bahanTerpilih.harga_beli_kemasan / bahanTerpilih.isi_kemasan;
+                } else {
+                    const hppBahanBiang = hitungHppProduk(bahanTerpilih);
+                    if(bahanTerpilih.hasil_jadi_jumlah > 0) {
+                        hargaPerSatuan = hppBahanBiang / bahanTerpilih.hasil_jadi_jumlah;
+                    }
+                }
 
-<!-- Modal Pilih Bahan -->
-<div id="pilih-bahan-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h2>Pilih Bahan</h2>
-        <input type="text" id="search-bahan-input" placeholder="Ketik untuk mencari bahan...">
-        <div class="bahan-source-tabs">
-            <button class="bahan-source-btn active" data-source="bahan_baku">Bahan Mentah</button>
-            <button class="bahan-source-btn" data-source="produk_setengah_jadi">Produk Setengah Jadi (Biang)</button>
-        </div>
-        <ul id="bahan-search-results"></ul>
-        <div class="modal-actions">
-            <!-- ▼▼▼ TOMBOL BARU UNTUK TAMBAH CEPAT ▼▼▼ -->
-            <button type="button" id="buat-bahan-baru-cepat-btn" class="button-secondary">+ Buat Bahan Mentah Baru</button>
-            <button type="button" id="cancel-pilih-bahan-btn">Batal</button>
-        </div>
-    </div>
-</div>
+                const biayaBahan = jumlah * hargaPerSatuan;
+                biayaDisplay.textContent = formatRupiah(biayaBahan);
+                totalBiayaBahan += biayaBahan;
+            } else {
+                biayaDisplay.textContent = 'Rp 0,00';
+            }
+        });
+        
+        const overheadValue = parseFloat(overheadCostInput.value) || 0;
+        const overheadType = overheadTypeInput.value;
+        let overheadCost = 0;
+        if (overheadType === 'persen') {
+            overheadCost = totalBiayaBahan * (overheadValue / 100);
+        } else {
+            overheadCost = overheadValue;
+        }
 
-<!-- ▼▼▼ MODAL BARU UNTUK TAMBAH BAHAN CEPAT ▼▼▼ -->
-<div id="tambah-bahan-cepat-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h2>Tambah Bahan Baku Baru</h2>
-        <p>Bahan ini akan langsung ditambahkan ke Master Bahan Baku.</p>
-        <form id="master-bahan-cepat-form">
-            <label for="bahan-nama-cepat">Nama Bahan</label>
-            <input type="text" id="bahan-nama-cepat" required>
-            <label for="harga-beli-kemasan-cepat">Harga Beli Kemasan (Rp)</label>
-            <input type="number" id="harga-beli-kemasan-cepat" placeholder="0" required>
-            <div class="input-group">
-                <div><label for="isi-kemasan-cepat">Isi</label><input type="number" id="isi-kemasan-cepat" placeholder="0" required></div>
-                <div><label for="satuan-kemasan-cepat">Satuan</label><input type="text" id="satuan-kemasan-cepat" placeholder="cth: ml" required></div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" id="cancel-tambah-cepat-btn">Batal</button>
-                <button type="submit">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
+        const labor = parseFloat(laborCostInput.value) || 0;
+        const biayaProduksi = totalBiayaBahan + overheadCost + labor;
+        const errorPercent = parseFloat(errorCostPercentInput.value) || 0;
+        const errorCost = biayaProduksi * (errorPercent / 100);
+        const totalCogs = biayaProduksi + errorCost;
+        totalCogsDisplay.textContent = formatRupiah(totalCogs);
+        
+        const marginPercent = parseFloat(targetMarginPercentInput.value) || 0;
+        let saranHarga = 0;
+        if (marginPercent < 100 && marginPercent >= 0) {
+            saranHarga = totalCogs / (1 - (marginPercent / 100));
+        } else if (totalCogs > 0) {
+            saranHarga = totalCogs;
+        }
+        saranHargaDisplay.textContent = formatRupiah(saranHarga);
+        
+        const hargaJualAktual = parseFloat(hargaJualAktualInput.value) || 0;
+        if (hargaJualAktual === 0 && saranHarga > 0) {
+            hargaJualAktualInput.value = Math.ceil(saranHarga / 1000) * 1000;
+        }
+        
+        const profit = hargaJualAktual - totalCogs;
+        const profitPercent = hargaJualAktual > 0 ? (profit / hargaJualAktual) * 100 : 0;
+        profitDisplay.textContent = formatRupiah(profit);
+        profitPercentDisplay.textContent = profitPercent.toFixed(2);
+    };
 
-<!-- Script Tags -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js"></script>
+    const simpanProduk = async (event) => {
+        event.preventDefault();
+        if (!currentUser) { alert('Sesi tidak ditemukan.'); return; }
+        const namaProduk = produkNamaInput.value;
+        if (!namaProduk) { alert('Nama produk tidak boleh kosong!'); return; }
+        const resepItems = [];
+        resepTableBody.querySelectorAll('tr').forEach(row => {
+            const bahanId = row.dataset.bahanId;
+            const jumlah = parseFloat(row.querySelector('.jumlah-resep').value) || 0;
+            if (bahanId && jumlah > 0) {
+                resepItems.push({ bahan_id: bahanId, jumlah: jumlah, source: row.dataset.source });
+            }
+        });
+        if (resepItems.length === 0) { alert('Resep tidak boleh kosong!'); return; }
 
-</body>
-</html>
+        const produkData = {
+            nama_produk: namaProduk,
+            resep: resepItems,
+            jenis_produk: jenisProdukInput.value,
+            kategori: produkKategoriInput.value,
+            hasil_jadi_jumlah: parseFloat(hasilJadiJumlahInput.value) || 0,
+            hasil_jadi_satuan: hasilJadiSatuanInput.value,
+            overhead_cost: parseFloat(overheadCostInput.value) || 0,
+            overhead_cost_type: overheadTypeInput.value,
+            labor_cost: parseFloat(laborCostInput.value) || 0,
+            error_cost_percent: parseFloat(errorCostPercentInput.value) || 0,
+            target_margin_percent: parseFloat(targetMarginPercentInput.value) || 0,
+            harga_jual_aktual: parseFloat(hargaJualAktualInput.value) || 0,
+            user_id: currentUser.id
+        };
+
+        let error;
+        if (isEditingProduk && editingProdukId) {
+            const { error: updateError } = await supabaseClient.from('produk').update(produkData).eq('id', editingProdukId);
+            error = updateError;
+        } else {
+            const { error: insertError } = await supabaseClient.from('produk').insert([produkData]);
+            error = insertError;
+        }
+        if (error) {
+            console.error('Error menyimpan produk:', error);
+            alert('Gagal menyimpan produk!');
+        } else {
+            alert(`Produk berhasil ${isEditingProduk ? 'diperbarui' : 'disimpan'}!`);
+            resetFormHpp();
+            await loadProduk();
+        }
+    };
+
+    const loadProduk = async () => {
+        const { data, error } = await supabaseClient.from('produk').select('*').order('created_at', { ascending: false });
+        if (error) { console.error('Error mengambil data produk:', error); return; }
+        
+        const produkJadi = data.filter(p => p.jenis_produk === 'Produk Jadi');
+        produkSetengahJadiList = data.filter(p => p.jenis_produk === 'Produk Setengah Jadi');
+
+        produkTableBody.innerHTML = '';
+        produkJadi.forEach(produk => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${produk.nama_produk}</td>
+                <td>${produk.kategori || '-'}</td>
+                <td>${formatRupiah(produk.harga_jual_aktual)}</td>
+                <td>
+                    <button class="button-edit" data-id="${produk.id}">Edit</button>
+                    <button class="button-delete" data-id="${produk.id}">Hapus</button>
+                </td>
+            `;
+            produkTableBody.appendChild(row);
+        });
+    };
+
+    const hapusProduk = async (id) => {
+        if (confirm("Yakin mau hapus produk ini beserta resepnya?")) {
+            const { error } = await supabaseClient.from('produk').delete().eq('id', id);
+            if (error) { console.error('Error menghapus produk:', error); alert('Gagal menghapus produk!'); } 
+            else { loadProduk(); }
+        }
+    };
+
+    const editProduk = async (id) => {
+        const { data: produk, error } = await supabaseClient.from('produk').select('*').eq('id', id).single();
+        if (error) { console.error('Error mengambil data produk:', error); return; }
+        isEditingProduk = true;
+        editingProdukId = id;
+        produkNamaInput.value = produk.nama_produk;
+        produkKategoriInput.value = produk.kategori || 'Minuman';
+        jenisProdukInput.value = produk.jenis_produk || 'Produk Jadi';
+        hasilJadiJumlahInput.value = produk.hasil_jadi_jumlah || '';
+        hasilJadiSatuanInput.value = produk.hasil_jadi_satuan || '';
+        overheadCostInput.value = produk.overhead_cost || 0;
+        overheadTypeInput.value = produk.overhead_cost_type || 'nominal';
+        laborCostInput.value = produk.labor_cost || 0;
+        errorCostPercentInput.value = produk.error_cost_percent || 0;
+        targetMarginPercentInput.value = produk.target_margin_percent || 0;
+        hargaJualAktualInput.value = produk.harga_jual_aktual || 0;
+        resepTableBody.innerHTML = '';
+        if (produk.resep) {
+            produk.resep.forEach(item => {
+                const listToSearch = item.source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+                const bahan = listToSearch.find(b => b.id === item.bahan_id);
+                if (bahan) {
+                    addBahanFromModal(bahan, item.jumlah);
+                }
+            });
+        }
+        updatePerhitunganTotal();
+        toggleKalkulatorMode();
+        mainNav.querySelector('[data-page="page-kalkulator"]').click();
+        document.getElementById('kalkulator-container').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const resetFormHpp = () => {
+        isEditingProduk = false;
+        editingProdukId = null;
+        hppForm.reset();
+        resepTableBody.innerHTML = '';
+        toggleKalkulatorMode();
+        updatePerhitunganTotal();
+    };
+
+    const toggleKalkulatorMode = () => {
+        const tipe = jenisProdukInput.value;
+        if (tipe === 'Produk Setengah Jadi') {
+            hasilJadiContainer.classList.remove('hidden');
+            hargaJualContainer.classList.add('hidden');
+            saranHargaWrapper.classList.add('hidden');
+        } else {
+            hasilJadiContainer.classList.add('hidden');
+            hargaJualContainer.classList.remove('hidden');
+            saranHargaWrapper.classList.remove('hidden');
+        }
+    };
+
+    const openPilihBahanModal = () => {
+        tampilkanHasilPencarian();
+        pilihBahanModal.classList.remove('hidden');
+        searchBahanInput.value = '';
+        searchBahanInput.focus();
+    };
+
+    const tampilkanHasilPencarian = (query = '', source = 'bahan_baku') => {
+        bahanSearchResults.innerHTML = '';
+        const listToSearch = source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+        const filteredList = listToSearch.filter(item => {
+            const itemName = item.nama || item.nama_produk;
+            return itemName && itemName.toLowerCase().includes(query.toLowerCase());
+        });
+        if (filteredList.length === 0) {
+            bahanSearchResults.innerHTML = '<li>Bahan tidak ditemukan.</li>';
+            return;
+        }
+        filteredList.forEach(item => {
+            const li = document.createElement('li');
+            const itemName = item.nama || item.nama_produk;
+            const itemSatuan = item.satuan_kemasan || item.hasil_jadi_satuan;
+            li.dataset.id = item.id;
+            li.dataset.source = source;
+            li.dataset.nama = itemName;
+            let hargaPerSatuanDasar = 0;
+            if(source === 'bahan_baku'){
+                if(item.isi_kemasan > 0) hargaPerSatuanDasar = item.harga_beli_kemasan / item.isi_kemasan;
+            } else {
+                const hppBahanBiang = hitungHppProduk(item);
+                if(item.hasil_jadi_jumlah > 0) hargaPerSatuanDasar = hppBahanBiang / item.hasil_jadi_jumlah;
+            }
+            const tagBiang = source === 'produk_setengah_jadi' ? '<small class="chip">Biang</small>' : '';
+            li.innerHTML = `<div><span>${itemName}</span>${tagBiang}</div><small>${formatRupiah(hargaPerSatuanDasar)} / ${itemSatuan}</small>`;
+            bahanSearchResults.appendChild(li);
+        });
+    };
+
+    const hitungHppProduk = (produk) => {
+        if (!produk || !produk.resep) return 0;
+        return produk.resep.reduce((total, item) => {
+            const listToSearch = item.source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+            const bahan = listToSearch.find(b => b.id === item.bahan_id);
+            if (!bahan) return total;
+
+            let hargaPerSatuan = 0;
+            if (item.source === 'bahan_baku') {
+                if (bahan.isi_kemasan > 0) hargaPerSatuan = bahan.harga_beli_kemasan / bahan.isi_kemasan;
+            } else {
+                const hppBahanBiang = hitungHppProduk(bahan);
+                if (bahan.hasil_jadi_jumlah > 0) hargaPerSatuan = hppBahanBiang / bahan.hasil_jadi_jumlah;
+            }
+            return total + (item.jumlah * hargaPerSatuan);
+        }, 0);
+    };
+
+
+    // === EVENT LISTENERS ===
+    const setupEventListeners = () => {
+        if (signupForm) { signupForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; const { error } = await supabaseClient.auth.signUp({ email, password }); if (error) { alert('Error mendaftar: ' + error.message); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); } }); }
+        if (loginForm) { loginForm.addEventListener('submit', async (event) => { event.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; const { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { alert('Error login: ' + error.message); } }); }
+        if (logoutButton) { logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); }); }
+        if (masterBahanForm) { masterBahanForm.addEventListener('submit', (e) => simpanBahanBaku(e, false)); }
+        if (masterBahanCepatForm) { masterBahanCepatForm.addEventListener('submit', (e) => simpanBahanBaku(e, true)); }
+        if (masterBahanTableBody) { masterBahanTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('button-delete')) { hapusBahanBaku(event.target.getAttribute('data-id')); } if (event.target.classList.contains('button-edit')) { openEditModal(event.target.getAttribute('data-id')); } }); }
+        if (editBahanForm) { editBahanForm.addEventListener('submit', simpanPerubahanBahan); }
+        if (cancelEditBtn) { cancelEditBtn.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
+        if (addResepItemBtn) { addResepItemBtn.addEventListener('click', openPilihBahanModal); }
+        if (hppForm) { hppForm.addEventListener('submit', simpanProduk); }
+        if (produkTableBody) { produkTableBody.addEventListener('click', (event) => { const target = event.target; const id = target.getAttribute('data-id'); if (target.classList.contains('button-delete')) { hapusProduk(id); } if (target.classList.contains('button-edit')) { editProduk(id); } }); }
+        if (resetHppBtn) { resetHppBtn.addEventListener('click', resetFormHpp); }
+        if (cancelPilihBahanBtn) { cancelPilihBahanBtn.addEventListener('click', () => pilihBahanModal.classList.add('hidden')); }
+        if (buatBahanBaruCepatBtn) { buatBahanBaruCepatBtn.addEventListener('click', () => tambahBahanCepatModal.classList.remove('hidden')); }
+        if (cancelTambahCepatBtn) { cancelTambahCepatBtn.addEventListener('click', () => tambahBahanCepatModal.classList.add('hidden')); }
+        if (searchBahanInput) { searchBahanInput.addEventListener('input', () => tampilkanHasilPencarian(searchBahanInput.value, document.querySelector('.bahan-source-btn.active').dataset.source)); }
+        if (bahanSourceTabs) { bahanSourceTabs.addEventListener('click', (event) => { if (event.target.classList.contains('bahan-source-btn')) { bahanSourceTabs.querySelectorAll('.bahan-source-btn').forEach(btn => btn.classList.remove('active')); event.target.classList.add('active'); tampilkanHasilPencarian(searchBahanInput.value, event.target.dataset.source); } }); }
+        if (bahanSearchResults) { bahanSearchResults.addEventListener('click', (event) => { const targetLi = event.target.closest('li'); if (targetLi && targetLi.dataset.id) { const bahan = { id: targetLi.dataset.id, nama: targetLi.dataset.nama, source: targetLi.dataset.source, }; addBahanFromModal(bahan); pilihBahanModal.classList.add('hidden'); } }); }
+        if (jenisProdukInput) { jenisProdukInput.addEventListener('change', toggleKalkulatorMode); }
+
+        const calculationInputs = [overheadCostInput, overheadTypeInput, laborCostInput, errorCostPercentInput, targetMarginPercentInput, hargaJualAktualInput];
+        calculationInputs.forEach(element => { if (element) { element.addEventListener('input', updatePerhitunganTotal); element.addEventListener('change', updatePerhitunganTotal); } });
+        if (resepTableBody) {
+            resepTableBody.addEventListener('input', (event) => { if (event.target.classList.contains('jumlah-resep')) { updatePerhitunganTotal(); } });
+            resepTableBody.addEventListener('click', (event) => { if (event.target.classList.contains('hapus-resep-item')) { event.target.closest('tr').remove(); updatePerhitunganTotal(); } });
+        }
+        if (mainNav) {
+            mainNav.addEventListener('click', (event) => {
+                if (event.target.classList.contains('nav-button')) {
+                    const targetPageId = event.target.getAttribute('data-page');
+                    pages.forEach(page => page.classList.remove('active'));
+                    mainNav.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                    document.getElementById(targetPageId).classList.add('active');
+                    event.target.classList.add('active');
+                    if(targetPageId === 'page-kalkulator') resetFormHpp();
+                }
+            });
+        }
+    };
+    
+    // === INISIALISASI APLIKASI ===
+    const initApp = async () => {
+        setupEventListeners();
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        updateUI(session?.user);
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+            updateUI(session?.user);
+        });
+    };
+
+    initApp();
+});
