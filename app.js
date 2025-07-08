@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else { editModal.classList.add('hidden'); loadBahanBaku(); }
     };
 
-    const tambahBahanKeResep = (bahan) => {
+    const addBahanFromModal = (bahan) => {
         const row = document.createElement('tr');
         row.dataset.bahanId = bahan.id;
         row.dataset.source = bahan.source;
@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td><button type="button" class="button-delete hapus-resep-item">X</button></td>
         `;
         resepTableBody.appendChild(row);
+        updatePerhitunganTotal();
     };
 
     const updatePerhitunganTotal = () => {
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let hargaPerSatuan = 0;
                 if(source === 'bahan_baku'){
                     if(bahanTerpilih.isi_kemasan > 0) hargaPerSatuan = bahanTerpilih.harga_beli_kemasan / bahanTerpilih.isi_kemasan;
-                } else { // Produk Setengah Jadi
+                } else {
                     const hppBahanBiang = hitungHppProduk(bahanTerpilih);
                     if(bahanTerpilih.hasil_jadi_jumlah > 0) {
                         hargaPerSatuan = hppBahanBiang / bahanTerpilih.hasil_jadi_jumlah;
@@ -389,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const openPilihBahanModal = () => {
         tampilkanHasilPencarian();
         pilihBahanModal.classList.remove('hidden');
+        searchBahanInput.value = '';
         searchBahanInput.focus();
     };
 
@@ -446,14 +448,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.source === 'bahan_baku') {
                 if (bahan.isi_kemasan > 0) hargaPerSatuan = bahan.harga_beli_kemasan / bahan.isi_kemasan;
             } else {
-                // Rekursif untuk menghitung HPP bahan biang
                 const hppBahanBiang = hitungHppProduk(bahan);
                 if (bahan.hasil_jadi_jumlah > 0) hargaPerSatuan = hppBahanBiang / bahan.hasil_jadi_jumlah;
             }
             return total + (item.jumlah * hargaPerSatuan);
         }, 0);
     };
-
 
     // === EVENT LISTENERS ===
     const setupEventListeners = () => {
