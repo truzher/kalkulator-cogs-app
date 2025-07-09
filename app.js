@@ -141,6 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else { editModal.classList.add('hidden'); loadBahanBaku(); }
     };
     
+    // === FUNGSI-FUNGSI KALKULATOR ===
+
     const addBahanFromModal = (bahan) => {
         const resepTableBody = document.getElementById('resep-table-body');
         const row = document.createElement('tr');
