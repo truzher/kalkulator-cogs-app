@@ -1,5 +1,3 @@
-// File: app.js (VERSI FINAL DENGAN PERBAIKAN URUTAN FUNGSI)
-
 document.addEventListener('DOMContentLoaded', () => {
     // === KONFIGURASI SUPABASE ===
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; 
@@ -13,13 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let isEditingProduk = false;
     let editingProdukId = null;
 
-    // === DEKLARASI SEMUA FUNGSI DI SINI (DITARUH DI ATAS) ===
-
+    // === DEKLARASI SEMUA FUNGSI DI SINI (DITARUH DI ATAS AGAR DIKENAL SEMUA) ===
+    
+    // Fungsi untuk memformat angka menjadi Rupiah
     const formatRupiah = (angka) => {
         if (isNaN(angka)) return 'Rp 0,00';
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(angka);
     };
 
+    // Fungsi untuk menghitung HPP sebuah produk (bisa rekursif)
     const hitungHppProduk = (produk) => {
         if (!produk || !produk.resep) return 0;
         return produk.resep.reduce((total, item) => {
@@ -38,44 +38,158 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 0);
     };
 
-    const loadBahanBaku = async (kategoriFilter = 'Semua') => {
-        const masterBahanTableBody = document.getElementById('master-bahan-table-body');
-        if (!masterBahanTableBody) return;
+    // Fungsi untuk menampilkan daftar bahan di modal pencarian
+    const tampilkanHasilPencarian = (query = '', source = 'bahan_baku') => {
+        const bahanSearchResults = document.getElementById('bahan-search-results');
+        bahanSearchResults.innerHTML = '';
+        const listToSearch = source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+        const filteredList = listToSearch.filter(item => {
+            const itemName = item.nama || item.nama_produk;
+            return itemName && itemName.toLowerCase().includes(query.toLowerCase());
+        });
 
-        let query = supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
-        if (kategoriFilter !== 'Semua') {
-            query = query.eq('kategori', kategoriFilter);
+        if (filteredList.length === 0) {
+            bahanSearchResults.innerHTML = '<li>Bahan tidak ditemukan.</li>';
+            return;
         }
-        const { data, error } = await query;
 
-        if (error) { console.error('Error mengambil data bahan baku:', error); return; }
-        
-        if (kategoriFilter === 'Semua') {
-            masterBahanList = data;
-        }
-
-        masterBahanTableBody.innerHTML = '';
-        data.forEach(bahan => {
-            const hargaPerSatuanDasar = (bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${bahan.nama}</td>
-                <td><span class="chip-kategori">${bahan.kategori || 'Lainnya'}</span></td>
-                <td>${formatRupiah(hargaPerSatuanDasar)} / ${bahan.satuan_kemasan}</td>
-                <td>
-                    <button class="button-edit" data-id="${bahan.id}">Edit</button>
-                    <button class="button-delete" data-id="${bahan.id}">Hapus</button>
-                </td>
-            `;
-            masterBahanTableBody.appendChild(row);
+        filteredList.forEach(item => {
+            const li = document.createElement('li');
+            const itemName = item.nama || item.nama_produk;
+            const itemSatuan = item.satuan_kemasan || item.hasil_jadi_satuan;
+            li.dataset.id = item.id;
+            li.dataset.source = source;
+            li.dataset.nama = itemName;
+            
+            let hargaPerSatuanDasar = 0;
+            if(source === 'bahan_baku'){
+                if(item.isi_kemasan > 0) hargaPerSatuanDasar = item.harga_beli_kemasan / item.isi_kemasan;
+            } else {
+                const hppBahanBiang = hitungHppProduk(item);
+                if(item.hasil_jadi_jumlah > 0) hargaPerSatuanDasar = hppBahanBiang / item.hasil_jadi_jumlah;
+            }
+            const tagBiang = source === 'produk_setengah_jadi' ? '<small class="chip">Biang</small>' : '';
+            li.innerHTML = `<div><span>${itemName}</span>${tagBiang}</div><small>${formatRupiah(hargaPerSatuanDasar)} / ${itemSatuan || 'unit'}</small>`;
+            bahanSearchResults.appendChild(li);
         });
     };
 
+    // Fungsi untuk menampilkan atau menyembunyikan form berdasarkan tipe produk
+    const toggleKalkulatorMode = () => {
+        const jenisProdukInput = document.getElementById('jenis-produk-input');
+        const hasilJadiContainer = document.getElementById('hasil-jadi-container');
+        const hargaJualContainer = document.getElementById('harga-jual-container');
+        const saranHargaWrapper = document.getElementById('saran-harga-wrapper');
+
+        const tipe = jenisProdukInput.value;
+        if (tipe === 'Produk Setengah Jadi') {
+            hasilJadiContainer.classList.remove('hidden');
+            hargaJualContainer.classList.add('hidden');
+            saranHargaWrapper.classList.add('hidden');
+        } else {
+            hasilJadiContainer.classList.add('hidden');
+            hargaJualContainer.classList.remove('hidden');
+            saranHargaWrapper.classList.remove('hidden');
+        }
+    };
+    
+    // Fungsi untuk menghitung ulang semua nilai di kalkulator
+    const updatePerhitunganTotal = () => {
+        const resepTableBody = document.getElementById('resep-table-body');
+        const totalCogsDisplay = document.getElementById('total-cogs-display');
+        const saranHargaDisplay = document.getElementById('saran-harga-display');
+        const profitDisplay = document.getElementById('profit-display');
+        const profitPercentDisplay = document.getElementById('profit-percent-display');
+        const hargaJualAktualInput = document.getElementById('harga-jual-aktual');
+        const overheadCostInput = document.getElementById('overhead-cost');
+        const overheadTypeInput = document.getElementById('overhead-type');
+        const laborCostInput = document.getElementById('labor-cost');
+        const errorCostPercentInput = document.getElementById('error-cost-percent');
+        const targetMarginPercentInput = document.getElementById('target-margin-percent');
+
+        let totalBiayaBahan = 0;
+        resepTableBody.querySelectorAll('tr').forEach(row => {
+            const jumlahInput = row.querySelector('.jumlah-resep');
+            const biayaDisplay = row.querySelector('.biaya-resep-display');
+            const bahanId = row.dataset.bahanId;
+            const source = row.dataset.source;
+            const jumlah = parseFloat(jumlahInput.value) || 0;
+            
+            const listToSearch = source === 'bahan_baku' ? masterBahanList : produkSetengahJadiList;
+            const bahanTerpilih = listToSearch.find(b => b.id === bahanId);
+
+            if (bahanTerpilih) {
+                let hargaPerSatuan = 0;
+                if(source === 'bahan_baku'){
+                    if(bahanTerpilih.isi_kemasan > 0) hargaPerSatuan = bahanTerpilih.harga_beli_kemasan / bahanTerpilih.isi_kemasan;
+                } else {
+                    const hppBahanBiang = hitungHppProduk(bahanTerpilih);
+                    if(bahanTerpilih.hasil_jadi_jumlah > 0) {
+                        hargaPerSatuan = hppBahanBiang / bahanTerpilih.hasil_jadi_jumlah;
+                    }
+                }
+
+                const biayaBahan = jumlah * hargaPerSatuan;
+                biayaDisplay.textContent = formatRupiah(biayaBahan);
+                totalBiayaBahan += biayaBahan;
+            } else {
+                biayaDisplay.textContent = 'Rp 0,00';
+            }
+        });
+        
+        const overheadValue = parseFloat(overheadCostInput.value) || 0;
+        const overheadType = overheadTypeInput.value;
+        let overheadCost = 0;
+        if (overheadType === 'persen') {
+            overheadCost = totalBiayaBahan * (overheadValue / 100);
+        } else {
+            overheadCost = overheadValue;
+        }
+
+        const labor = parseFloat(laborCostInput.value) || 0;
+        const biayaProduksi = totalBiayaBahan + overheadCost + labor;
+        const errorPercent = parseFloat(errorCostPercentInput.value) || 0;
+        const errorCost = biayaProduksi * (errorPercent / 100);
+        const totalCogs = biayaProduksi + errorCost;
+        totalCogsDisplay.textContent = formatRupiah(totalCogs);
+        
+        const marginPercent = parseFloat(targetMarginPercentInput.value) || 0;
+        let saranHarga = 0;
+        if (marginPercent < 100 && marginPercent >= 0) {
+            saranHarga = totalCogs / (1 - (marginPercent / 100));
+        } else if (totalCogs > 0) {
+            saranHarga = totalCogs;
+        }
+        saranHargaDisplay.textContent = formatRupiah(saranHarga);
+        
+        const hargaJualAktual = parseFloat(hargaJualAktualInput.value) || 0;
+        if (hargaJualAktual === 0 && saranHarga > 0) {
+            hargaJualAktualInput.value = Math.ceil(saranHarga / 1000) * 1000;
+        }
+        
+        const profit = hargaJualAktual - totalCogs;
+        const profitPercent = hargaJualAktual > 0 ? (profit / hargaJualAktual) * 100 : 0;
+        profitDisplay.textContent = formatRupiah(profit);
+        profitPercentDisplay.textContent = profitPercent.toFixed(2);
+    };
+
+    // Fungsi untuk mereset form HPP
+    const resetFormHpp = () => {
+        isEditingProduk = false;
+        editingProdukId = null;
+        document.getElementById('hpp-form').reset();
+        document.getElementById('resep-table-body').innerHTML = '';
+        toggleKalkulatorMode();
+        updatePerhitunganTotal();
+    };
+    
+    // Fungsi untuk memuat data produk
     const loadProduk = async () => {
         const produkTableBody = document.getElementById('produk-table-body');
         if (!produkTableBody) return;
 
-        const { data, error } = await supabaseClient.from('produk').select('*, resep(*)').order('created_at', { ascending: false });
+        // PERBAIKAN: Ganti select query agar tidak error
+        const { data, error } = await supabaseClient.from('produk').select('*').order('created_at', { ascending: false });
         if (error) { console.error('Error mengambil data produk:', error); return; }
         
         produkJadiList = data.filter(p => p.jenis_produk === 'Produk Jadi');
@@ -98,31 +212,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Fungsi ini akan dipanggil oleh setupUI
-    const setupAppEventListeners = () => {
-        // Taruh SEMUA getElementById dan addEventListener untuk aplikasi di sini
-        const logoutButton = document.getElementById('logout-button');
-        if (logoutButton) logoutButton.addEventListener('click', async () => await supabaseClient.auth.signOut());
-
-        const masterBahanForm = document.getElementById('master-bahan-form');
-        if (masterBahanForm) masterBahanForm.addEventListener('submit', (e) => simpanBahanBaku(e, false));
-        
-        const bahanFilterContainer = document.getElementById('bahan-filter-container');
-        if (bahanFilterContainer) {
-            bahanFilterContainer.addEventListener('click', (event) => {
-                if (event.target.classList.contains('filter-btn')) {
-                    const kategori = event.target.dataset.kategori;
-                    document.querySelector('#bahan-filter-container .active').classList.remove('active');
-                    event.target.classList.add('active');
-                    loadBahanBaku(kategori);
-                }
-            });
+    // Fungsi untuk memuat bahan baku
+    const loadBahanBaku = async (kategoriFilter = 'Semua') => {
+         const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+        if (!masterBahanTableBody) return;
+        let query = supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        if (kategoriFilter !== 'Semua') {
+            query = query.eq('kategori', kategoriFilter);
         }
-        
-        // ... (dan seterusnya untuk semua event listener lainnya)
+        const { data, error } = await query;
+        if (error) { console.error('Error mengambil data bahan baku:', error); return; }
+        if (kategoriFilter === 'Semua') {
+            masterBahanList = data;
+        }
+        masterBahanTableBody.innerHTML = '';
+        data.forEach(bahan => {
+            const hargaPerSatuanDasar = (bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${bahan.nama}</td>
+                <td><span class="chip-kategori">${bahan.kategori || 'Lainnya'}</span></td>
+                <td>${formatRupiah(hargaPerSatuanDasar)} / ${bahan.satuan_kemasan}</td>
+                <td>
+                    <button class="button-edit" data-id="${bahan.id}">Edit</button>
+                    <button class="button-delete" data-id="${bahan.id}">Hapus</button>
+                </td>
+            `;
+            masterBahanTableBody.appendChild(row);
+        });
     };
 
-    // Fungsi utama untuk mengatur tampilan
+    // Fungsi utama untuk mengatur tampilan berdasarkan status login
     const setupUI = (user) => {
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
@@ -149,6 +269,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (appContainer) appContainer.classList.add('hidden');
         }
     };
+
+    // Fungsi untuk memasang semua event listener APLIKASI (setelah login)
+    const setupAppEventListeners = () => {
+        // Taruh SEMUA getElementById dan addEventListener untuk aplikasi di sini
+        const logoutButton = document.getElementById('logout-button');
+        if (logoutButton) logoutButton.addEventListener('click', async () => await supabaseClient.auth.signOut());
+
+        const masterBahanForm = document.getElementById('master-bahan-form');
+        if (masterBahanForm) masterBahanForm.addEventListener('submit', (e) => simpanBahanBaku(e, false));
+        
+        const bahanFilterContainer = document.getElementById('bahan-filter-container');
+        if (bahanFilterContainer) {
+            bahanFilterContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('filter-btn')) {
+                    const kategori = event.target.dataset.kategori;
+                    document.querySelector('#bahan-filter-container .active').classList.remove('active');
+                    event.target.classList.add('active');
+                    loadBahanBaku(kategori);
+                }
+            });
+        }
+        
+        // ... (dan seterusnya untuk semua event listener lainnya)
+    };
+
 
     // === INISIALISASI & AUTHENTIKASI AWAL ===
     const initAuth = () => {
