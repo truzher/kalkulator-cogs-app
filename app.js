@@ -313,4 +313,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (signupForm) {
-             signupForm.addEventListener('submit
+             signupForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const { error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) { alert('Error mendaftar: ' + error.message); } 
+                else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); }
+            });
+        }
+
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+            setupUI(session?.user);
+        });
+    };
+
+    // Jalankan aplikasi
+    initAuth();
+});
