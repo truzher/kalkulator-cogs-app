@@ -1,19 +1,15 @@
 // =================================================================
-// DIBUAT ULANG OLEH CICI - VERSI LENGKAP DENGAN LOAD DATA
+// DIBUAT ULANG OLEH CICI - VERSI FINAL + PERBAIKAN KOLOM & TOMBOL
 // =================================================================
 
-// Menunggu seluruh halaman HTML siap sebelum menjalankan JavaScript
 document.addEventListener('DOMContentLoaded', () => {
 
     // -------------------------------------------------------------
     // BAGIAN 1: KONEKSI & KONFIGURASI AWAL
     // -------------------------------------------------------------
+    const SUPABASE_URL = 'https://ubfbsmhyshosilhaewis.supabase.co'; // <- INI SUDAH CICI SESUAIKAN DARI SCREENSHOT
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- JANGAN LUPA GANTI INI
 
-    // Ganti dengan URL dan Anon Key dari proyek Supabase loe
-    const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
-
-    // Membuat koneksi ke Supabase
     const { createClient } = supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('Koneksi Supabase berhasil dibuat.');
@@ -32,23 +28,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // BAGIAN 3: FUNGSI-FUNGSI UTAMA
     // -------------------------------------------------------------
 
-    /**
-     * Mengatur tampilan UI berdasarkan status login pengguna.
-     * @param {object | null} user - Objek user dari Supabase, atau null jika logout.
-     */
     function setupUI(user) {
         if (user) {
-            // Jika user ADA (sudah login)
             console.log("User terdeteksi:", user.email, "Menampilkan aplikasi.");
             if (authContainer) authContainer.classList.add('hidden');
-            if (appContainer) appContainer.classList.remove('hidden');
+            if (appContainer) {
+                appContainer.classList.remove('hidden');
+                if (!appContainer.dataset.listenersAttached) {
+                    setupAppEventListeners();
+                    appContainer.dataset.listenersAttached = 'true';
+                }
+            }
             if (userEmailDisplay) userEmailDisplay.textContent = user.email;
-
-            // PERINTAH BARU: Panggil fungsi untuk memuat data dari database
             loadBahanBaku();
-
         } else {
-            // Jika user NULL (belum login / sudah logout)
             console.log("User tidak terdeteksi, menampilkan halaman login.");
             if (authContainer) authContainer.classList.remove('hidden');
             if (appContainer) appContainer.classList.add('hidden');
@@ -56,12 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Fungsi utama yang menjalankan semua logika otentikasi.
-     */
     function initAuth() {
         console.log('Menjalankan initAuth...');
-
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
 
@@ -105,22 +94,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // BAGIAN 4: LOGIKA KALKULATOR COGS
     // -------------------------------------------------------------
 
-    /**
-     * Mengambil dan menampilkan data bahan baku dari Supabase.
-     */
-    async function loadBahanBaku() {
-        console.log("Mencoba memuat data bahan baku...");
+    async function loadBahanBaku(kategoriFilter = 'Semua') {
+        console.log(`Mencoba memuat data bahan baku dengan filter: ${kategoriFilter}`);
         const masterBahanTableBody = document.getElementById('master-bahan-table-body');
-        if (!masterBahanTableBody) {
-            console.error("Elemen tabel 'master-bahan-table-body' tidak ditemukan.");
-            return;
+        if (!masterBahanTableBody) return;
+
+        let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        
+        // Tambahkan filter jika bukan 'Semua'
+        if (kategoriFilter !== 'Semua') {
+            query = query.eq('kategori', kategoriFilter);
         }
 
-        const { data, error } = await _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        const { data, error } = await query;
 
         if (error) {
             console.error("Gagal memuat bahan baku:", error.message);
-            alert(`Gagal mengambil data: ${error.message}`);
             return;
         }
 
@@ -128,17 +117,17 @@ document.addEventListener('DOMContentLoaded', () => {
         masterBahanTableBody.innerHTML = '';
 
         if (data.length === 0) {
-            masterBahanTableBody.innerHTML = '<tr><td colspan="4">Belum ada bahan baku. Silakan tambahkan.</td></tr>';
+            masterBahanTableBody.innerHTML = `<tr><td colspan="4">Tidak ada bahan baku untuk kategori ini.</td></tr>`;
             return;
         }
 
         data.forEach(bahan => {
-            // Pastikan nama kolom di bawah ini SAMA PERSIS dengan di tabel Supabase loe
+            // PERBAIKAN NAMA KOLOM ADA DI SINI
             const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${bahan.nama_bahan || 'N/A'}</td>
-                <td>${bahan.kategori_bahan || 'N/A'}</td>
+                <td>${bahan.nama || 'N/A'}</td>
+                <td>${bahan.kategori || 'N/A'}</td>
                 <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(hargaPerSatuan)} / ${bahan.satuan_kemasan || ''}</td>
                 <td>
                     <button class="edit-btn" data-id="${bahan.id}">Edit</button>
@@ -149,6 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function setupAppEventListeners() {
+        console.log("Memasang event listener aplikasi...");
+        const navButtons = document.querySelectorAll('.nav-button');
+        const pages = document.querySelectorAll('.page');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                pages.forEach(page => page.classList.remove('active'));
+                button.classList.add('active');
+                const targetPageId = button.dataset.page;
+                document.getElementById(targetPageId).classList.add('active');
+            });
+        });
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const kategori = button.dataset.kategori;
+                loadBahanBaku(kategori); // Langsung memfilter
+            });
+        });
+    }
 
     // -------------------------------------------------------------
     // BAGIAN 5: JALANKAN APLIKASI
