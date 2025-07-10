@@ -81,7 +81,7 @@ function setupUI(user) {
             if (authContainer) authContainer.classList.remove('hidden');
             if (appContainer) appContainer.classList.add('hidden');
         }
-    };
+    });
     
     const loadBahanBaku = async (kategoriFilter = 'Semua') => {
         const masterBahanTableBody = document.getElementById('master-bahan-table-body');
