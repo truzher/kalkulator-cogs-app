@@ -231,6 +231,7 @@ async function handleSimpanProduk(e) {
         }));
 
         const produkData = {
+            user_id: (await _supabase.auth.getUser()).data.user.id,
             nama_produk: document.getElementById('produk-nama').value,
             kategori_produk: document.getElementById('produk-kategori').value,
             resep: resepData, // Menyimpan resep dalam format JSON
