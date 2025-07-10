@@ -12,22 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const { createClient } = supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Koneksi Supabase berhasil dibuat.');
     
     let masterBahanList = [];
 
-    // -------------------------------------------------------------
-    // BAGIAN 2: SELEKSI ELEMEN-ELEMEN PENTING DARI HTML
-    // -------------------------------------------------------------
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const userEmailDisplay = document.getElementById('user-email-display');
     const logoutButton = document.getElementById('logout-button');
-    console.log('Elemen-elemen DOM utama berhasil dipilih.');
 
-    // -------------------------------------------------------------
-    // BAGIAN 3: FUNGSI-FUNGSI UTAMA (LOGIN & UI)
-    // -------------------------------------------------------------
     function setupUI(user) {
         if (user) {
             if (authContainer) authContainer.classList.add('hidden');
@@ -48,14 +40,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initAuth() {
-        // ... (fungsi initAuth lengkap seperti sebelumnya, tidak diubah)
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const { error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) alert(`Login Gagal: ${error.message}`);
+            });
+        }
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const { error } = await _supabase.auth.signUp({ email, password });
+                if (error) { alert(`Daftar Gagal: ${error.message}`); } 
+                else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); }
+            });
+        }
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => await _supabase.auth.signOut());
+        }
+        _supabase.auth.onAuthStateChange((_event, session) => {
+            const user = session ? session.user : null;
+            setupUI(user);
+        });
     }
 
-    // -------------------------------------------------------------
-    // BAGIAN 4: LOGIKA APLIKASI (KALKULATOR, BAHAN, DLL)
-    // -------------------------------------------------------------
     async function loadBahanBaku(kategoriFilter = 'Semua') {
-        // ... (fungsi loadBahanBaku lengkap seperti sebelumnya, tidak diubah)
+        const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+        if (!masterBahanTableBody) return;
+        let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        if (kategoriFilter !== 'Semua') { query = query.eq('kategori', kategoriFilter); }
+        const { data, error } = await query;
+        if (error) { console.error("Gagal memuat bahan baku:", error.message); return; }
+        masterBahanList = data;
+        masterBahanTableBody.innerHTML = '';
+        if (data.length === 0) {
+            masterBahanTableBody.innerHTML = `<tr><td colspan="4">Tidak ada bahan baku.</td></tr>`;
+            return;
+        }
+        data.forEach(bahan => {
+            const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${bahan.nama || 'N/A'}</td>
+                <td>${bahan.kategori || 'N/A'}</td>
+                <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(hargaPerSatuan)} / ${bahan.satuan_kemasan || ''}</td>
+                <td><button class="edit-btn" data-id="${bahan.id}">Edit</button> <button class="delete-btn" data-id="${bahan.id}">Hapus</button></td>
+            `;
+            masterBahanTableBody.appendChild(row);
+        });
     }
 
     function renderPilihBahanList(bahanList) {
@@ -79,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function tambahBahanKeResep(bahanInfo) {
-        console.log("Menambahkan bahan ke resep:", bahanInfo);
         const resepTableBody = document.getElementById('resep-table-body');
         const row = document.createElement('tr');
         row.dataset.bahanId = bahanInfo.bahanId;
@@ -105,12 +142,62 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupAppEventListeners() {
-        // ... (fungsi setupAppEventListeners lengkap dengan semua listener baru seperti di atas)
-    }
-    
-    // -------------------------------------------------------------
-    // BAGIAN 5: JALANKAN APLIKASI
-    // -------------------------------------------------------------
-    initAuth();
+        const navButtons = document.querySelectorAll('.nav-button');
+        const pages = document.querySelectorAll('.page');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const addResepItemBtn = document.getElementById('add-resep-item-btn');
+        const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
+        const buatBahanBaruCepatBtn = document.getElementById('buat-bahan-baru-cepat-btn');
+        const cancelTambahCepatBtn = document.getElementById('cancel-tambah-cepat-btn');
+        const bahanSourceTabs = document.querySelectorAll('.bahan-source-btn');
+        const searchInput = document.getElementById('search-bahan-input');
+        const searchResultsContainer = document.getElementById('bahan-search-results');
 
+        navButtons.forEach(button => button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            pages.forEach(page => page.classList.remove('active'));
+            button.classList.add('active');
+            document.getElementById(button.dataset.page).classList.add('active');
+        }));
+
+        filterButtons.forEach(button => button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            loadBahanBaku(button.dataset.kategori);
+        }));
+        
+        if (addResepItemBtn) addResepItemBtn.addEventListener('click', openPilihBahanModal);
+        if (cancelPilihBahanBtn) cancelPilihBahanBtn.addEventListener('click', () => document.getElementById('pilih-bahan-modal').classList.add('hidden'));
+        if (buatBahanBaruCepatBtn) buatBahanBaruCepatBtn.addEventListener('click', () => {
+            document.getElementById('pilih-bahan-modal').classList.add('hidden');
+            document.getElementById('tambah-bahan-cepat-modal').classList.remove('hidden');
+        });
+        if (cancelTambahCepatBtn) cancelTambahCepatBtn.addEventListener('click', () => document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden'));
+
+        bahanSourceTabs.forEach(tab => tab.addEventListener('click', () => {
+            bahanSourceTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const source = tab.dataset.source;
+            if (source === 'bahan_baku') {
+                renderPilihBahanList(masterBahanList);
+            } else {
+                document.getElementById('bahan-search-results').innerHTML = '<li>Fitur Produk Setengah Jadi sedang dalam pengembangan.</li>';
+            }
+        }));
+
+        if(searchInput) searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredBahan = masterBahanList.filter(b => b.nama.toLowerCase().includes(searchTerm));
+            renderPilihBahanList(filteredBahan);
+
+        });
+
+        if(searchResultsContainer) searchResultsContainer.addEventListener('click', (e) => {
+            if(e.target && e.target.matches('li.search-result-item')) {
+                tambahBahanKeResep(e.target.dataset);
+            }
+        });
+    }
+
+    initAuth();
 });
