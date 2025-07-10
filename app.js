@@ -1,6 +1,5 @@
 // =================================================================
-// DIBUAT ULANG OLEH CICI - VERSI FINAL UNTUK LOGIN
-// Disesuaikan dengan struktur HTML yang punya form login & signup terpisah
+// DIBUAT ULANG OLEH CICI - VERSI LENGKAP DENGAN LOAD DATA
 // =================================================================
 
 // Menunggu seluruh halaman HTML siap sebelum menjalankan JavaScript
@@ -11,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
 
     // Ganti dengan URL dan Anon Key dari proyek Supabase loe
-    const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
+    const SUPABASE_URL = 'https://URL_PROYEK_LOE.supabase.co';
+    const SUPABASE_ANON_KEY = 'KUNCI_ANON_PROYEK_LOE';
 
     // Membuat koneksi ke Supabase
     const { createClient } = supabase;
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
     const userEmailDisplay = document.getElementById('user-email-display');
     const logoutButton = document.getElementById('logout-button');
-    // Kita tidak butuh messageDiv di sini karena form-nya terpisah
 
     console.log('Elemen-elemen DOM utama berhasil dipilih.');
 
@@ -45,6 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (authContainer) authContainer.classList.add('hidden');
             if (appContainer) appContainer.classList.remove('hidden');
             if (userEmailDisplay) userEmailDisplay.textContent = user.email;
+
+            // PERINTAH BARU: Panggil fungsi untuk memuat data dari database
+            loadBahanBaku();
+
         } else {
             // Jika user NULL (belum login / sudah logout)
             console.log("User tidak terdeteksi, menampilkan halaman login.");
@@ -56,77 +58,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Fungsi utama yang menjalankan semua logika otentikasi.
-     * VERSI BARU: Mengenali form login dan signup yang terpisah.
      */
     function initAuth() {
         console.log('Menjalankan initAuth...');
 
-        // Ambil elemen form login dan signup dari HTML
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
 
-        // --- Event Listener untuk Form LOGIN ---
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
-                alert('Mencoba login...'); // Menggunakan alert untuk sementara
-
+                alert('Mencoba login...');
                 const { error } = await _supabase.auth.signInWithPassword({ email, password });
-
-                if (error) {
-                    console.error("Error saat login:", error.message);
-                    alert(`Login Gagal: ${error.message}`);
-                } else {
-                    console.log("Login berhasil!");
-                    // Tampilan akan diurus oleh onAuthStateChange
-                }
+                if (error) alert(`Login Gagal: ${error.message}`);
             });
         }
 
-        // --- Event Listener untuk Form SIGNUP ---
         if (signupForm) {
             signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('signup-email').value;
                 const password = document.getElementById('signup-password').value;
-                alert('Mendaftarkan akun...'); // Menggunakan alert untuk sementara
-
+                alert('Mendaftarkan akun...');
                 const { error } = await _supabase.auth.signUp({ email, password });
-
                 if (error) {
-                    console.error("Error saat signup:", error.message);
                     alert(`Daftar Gagal: ${error.message}`);
                 } else {
-                    console.log("Signup berhasil, cek email untuk verifikasi.");
-                    alert('Pendaftaran berhasil! Silakan cek email kamu untuk verifikasi.');
+                    alert('Pendaftaran berhasil! Cek email untuk verifikasi.');
                 }
             });
         }
 
-
-        // Listener untuk tombol logout
         if (logoutButton) {
-            logoutButton.addEventListener('click', async () => {
-                console.log("Tombol logout diklik.");
-                await _supabase.auth.signOut();
-            });
+            logoutButton.addEventListener('click', async () => await _supabase.auth.signOut());
         }
 
-        // Listener untuk memantau perubahan status login
         _supabase.auth.onAuthStateChange((_event, session) => {
-            console.log("Status otentikasi berubah.");
             const user = session ? session.user : null;
             setupUI(user);
         });
     }
 
     // -------------------------------------------------------------
-    // BAGIAN 4: LOGIKA KALKULATOR COGS (DI SINI NANTI KITA ISI)
+    // BAGIAN 4: LOGIKA KALKULATOR COGS
     // -------------------------------------------------------------
 
-    // ... (Sengaja dikosongkan dulu, kita fokus benerin login) ...
+    /**
+     * Mengambil dan menampilkan data bahan baku dari Supabase.
+     */
+    async function loadBahanBaku() {
+        console.log("Mencoba memuat data bahan baku...");
+        const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+        if (!masterBahanTableBody) {
+            console.error("Elemen tabel 'master-bahan-table-body' tidak ditemukan.");
+            return;
+        }
+
+        const { data, error } = await _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Gagal memuat bahan baku:", error.message);
+            alert(`Gagal mengambil data: ${error.message}`);
+            return;
+        }
+
+        console.log("Data bahan baku berhasil diambil:", data);
+        masterBahanTableBody.innerHTML = '';
+
+        if (data.length === 0) {
+            masterBahanTableBody.innerHTML = '<tr><td colspan="4">Belum ada bahan baku. Silakan tambahkan.</td></tr>';
+            return;
+        }
+
+        data.forEach(bahan => {
+            // Pastikan nama kolom di bawah ini SAMA PERSIS dengan di tabel Supabase loe
+            const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${bahan.nama_bahan || 'N/A'}</td>
+                <td>${bahan.kategori_bahan || 'N/A'}</td>
+                <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(hargaPerSatuan)} / ${bahan.satuan_kemasan || ''}</td>
+                <td>
+                    <button class="edit-btn" data-id="${bahan.id}">Edit</button>
+                    <button class="delete-btn" data-id="${bahan.id}">Hapus</button>
+                </td>
+            `;
+            masterBahanTableBody.appendChild(row);
+        });
+    }
 
 
     // -------------------------------------------------------------
