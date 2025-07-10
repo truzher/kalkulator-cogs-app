@@ -6,6 +6,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// =================================================================
+// FUNGSI UNTUK MENGATUR TAMPILAN (UI)
+// INI BAGIAN YANG KEMARIN HILANG
+// =================================================================
+
+/**
+ * Mengatur tampilan UI berdasarkan status login pengguna.
+ * Menyembunyikan/menampilkan kontainer aplikasi atau kontainer login.
+ * @param {object | null} user - Objek user dari Supabase, atau null jika logout.
+ */
+function setupUI(user) {
+    const authContainer = document.getElementById('auth-container');
+    const appContainer = document.getElementById('app-container');
+    const userEmailDisplay = document.getElementById('user-email-display');
+
+    if (user) {
+        // Jika user ADA (sudah login)
+        console.log("User terdeteksi:", user.email, "Menampilkan aplikasi.");
+        authContainer.classList.add('hidden'); // Sembunyikan form login
+        appContainer.classList.remove('hidden'); // Tampilkan aplikasi utama
+        userEmailDisplay.textContent = user.email; // Tampilkan email user
+    } else {
+        // Jika user NULL (belum login / sudah logout)
+        console.log("User tidak terdeteksi, menampilkan halaman login.");
+        authContainer.classList.remove('hidden'); // Tampilkan form login
+        appContainer.classList.add('hidden'); // Sembunyikan aplikasi utama
+        userEmailDisplay.textContent = '';
+    }
+}
+   
     // === VARIABEL GLOBAL ===
     let currentUser = null;
     let masterBahanList = [];
