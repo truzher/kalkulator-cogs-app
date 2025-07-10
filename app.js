@@ -339,4 +339,28 @@ document.addEventListener('DOMContentLoaded', () => {
             resepTableBody.addEventListener('input', (e) => {
                 if (e.target && e.target.classList.contains('resep-jumlah')) {
                     const row = e.target.closest('tr');
-                    const hargaPerSatuan = parseFloat(row.dataset.
+                    const hargaPerSatuan = parseFloat(row.dataset.harga);
+                    const jumlah = parseFloat(e.target.value);
+                    const biayaCell = row.querySelector('.resep-biaya');
+                    if (!isNaN(hargaPerSatuan) && !isNaN(jumlah) && jumlah >= 0) {
+                        const totalBiaya = hargaPerSatuan * jumlah;
+                        biayaCell.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalBiaya);
+                    } else {
+                        biayaCell.textContent = 'Rp 0,00';
+                    }
+                    hitungTotalHppBahan();
+                }
+            });
+        }
+
+        const kalkulasiInputs = ['overhead-cost', 'overhead-type', 'labor-cost', 'error-cost-percent', 'target-margin-percent', 'harga-jual-aktual'];
+        kalkulasiInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if(element) {
+                element.addEventListener('input', kalkulasiFinal);
+            }
+        });
+    }
+
+    initAuth();
+});
