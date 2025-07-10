@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
         
-        // Tambahkan filter jika bukan 'Semua'
         if (kategoriFilter !== 'Semua') {
             query = query.eq('kategori', kategoriFilter);
         }
@@ -113,16 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        console.log("Data bahan baku berhasil diambil:", data);
         masterBahanTableBody.innerHTML = '';
-
         if (data.length === 0) {
             masterBahanTableBody.innerHTML = `<tr><td colspan="4">Tidak ada bahan baku untuk kategori ini.</td></tr>`;
             return;
         }
 
         data.forEach(bahan => {
-            // PERBAIKAN NAMA KOLOM ADA DI SINI
             const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -159,9 +155,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 const kategori = button.dataset.kategori;
-                loadBahanBaku(kategori); // Langsung memfilter
+                loadBahanBaku(kategori);
             });
         });
+
+        // --- Tombol Tambah Bahan di Form Resep ---
+        const addResepItemBtn = document.getElementById('add-resep-item-btn');
+        if (addResepItemBtn) {
+            addResepItemBtn.addEventListener('click', () => {
+                // Untuk sementara, kita munculkan alert untuk tes
+                alert('Tombol Tambah Bahan berfungsi!');
+                
+                // Di langkah selanjutnya, kita akan ganti alert ini
+                // dengan fungsi untuk memunculkan modal pencarian bahan.
+            });
+        }
     }
 
     // -------------------------------------------------------------
