@@ -302,14 +302,20 @@ function setupUI(user) {
                 const { error } = await supabaseClient.auth.signUp({ email, password });
                 if (error) { alert('Error mendaftar: ' + error.message); } 
                 else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); }
+// ================================================================
+// BLOK PENUTUP YANG BENAR
+// ================================================================
+            // Listener untuk memantau status login user
+            _supabase.auth.onAuthStateChange((_event, session) => {
+                setupUI(session?.user);
             });
-        }
+            
+            // Di sini kita akan tambahkan semua event listener untuk kalkulator nanti
+            console.log("Aplikasi siap digunakan.");
 
-        supabaseClient.auth.onAuthStateChange((_event, session) => {
-            setupUI(session?.user);
-        });
-    };
+        } // <-- INI ADALAH TANDA '}' PENUTUP UNTUK FUNGSI initAuth()
 
-    // Jalankan aplikasi
-    initAuth();
-});
+        // Jalankan aplikasi setelah semua fungsi siap
+        initAuth();
+
+    }); // <-- INI ADALAH '});' PENUTUP UNTUK event listener DOMContentLoaded
