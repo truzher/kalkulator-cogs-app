@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
 
     // Ganti dengan URL dan Anon Key dari proyek Supabase loe
-    const SUPABASE_URL = 'https://URL_PROYEK_LOE.supabase.co';
-    const SUPABASE_ANON_KEY = 'KUNCI_ANON_PROYEK_LOE';
+    const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
 
     // Membuat koneksi ke Supabase
     const { createClient } = supabase;
