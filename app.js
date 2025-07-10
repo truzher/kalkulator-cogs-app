@@ -213,6 +213,52 @@ document.addEventListener('DOMContentLoaded', () => {
         kalkulasiFinal();
     }
 
+async function handleSimpanProduk(e) {
+        e.preventDefault();
+        console.log("Tombol Simpan Produk diklik.");
+
+        const resepRows = document.querySelectorAll('#resep-table-body tr');
+        if (resepRows.length === 0) {
+            alert('Resep tidak boleh kosong!');
+            return;
+        }
+
+        const resepData = Array.from(resepRows).map(row => ({
+            bahan_id: row.dataset.bahanId,
+            nama_bahan: row.cells[0].textContent,
+            jumlah: row.querySelector('.resep-jumlah').value,
+            biaya: parseFloat(row.querySelector('.resep-biaya').textContent.replace(/[^0-9,-]+/g, "").replace(",", "."))
+        }));
+
+        const produkData = {
+            nama_produk: document.getElementById('produk-nama').value,
+            kategori_produk: document.getElementById('produk-kategori').value,
+            resep: resepData, // Menyimpan resep dalam format JSON
+            total_hpp: parseFloat(document.getElementById('total-cogs-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+            saran_harga_jual: parseFloat(document.getElementById('saran-harga-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+            profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+            profit_persen: parseFloat(document.getElementById('profit-percent-display').textContent.replace('%', ''))
+        };
+
+        if (!produkData.nama_produk) {
+            alert('Nama produk harus diisi!');
+            return;
+        }
+
+        // Kirim data ke tabel 'produk_jadi' di Supabase
+        const { data, error } = await _supabase.from('produk_jadi').insert([produkData]).select();
+
+        if (error) {
+            alert('Gagal menyimpan produk: ' + error.message);
+            console.error('Error Supabase:', error);
+        } else {
+            alert(`Produk "${data[0].nama_produk}" berhasil disimpan!`);
+            if(hppForm) hppForm.reset();
+            document.getElementById('resep-table-body').innerHTML = '';
+            kalkulasiFinal();
+        }
+    }
+    
     // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
     function setupAppEventListeners() {
         if (masterBahanForm) {
