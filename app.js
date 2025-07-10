@@ -166,46 +166,92 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupAppEventListeners() {
-        console.log("Memasang event listener aplikasi...");
-        const navButtons = document.querySelectorAll('.nav-button');
-        const pages = document.querySelectorAll('.page');
-        const filterButtons = document.querySelectorAll('.filter-btn');
+    console.log("Memasang event listener aplikasi...");
+    const navButtons = document.querySelectorAll('.nav-button');
+    const pages = document.querySelectorAll('.page');
+    const filterButtons = document.querySelectorAll('.filter-btn');
 
-        navButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                navButtons.forEach(btn => btn.classList.remove('active'));
-                pages.forEach(page => page.classList.remove('active'));
-                button.classList.add('active');
-                const targetPageId = button.dataset.page;
-                document.getElementById(targetPageId).classList.add('active');
-            });
+    // Navigasi Halaman Utama
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            pages.forEach(page => page.classList.remove('active'));
+            button.classList.add('active');
+            const targetPageId = button.dataset.page;
+            document.getElementById(targetPageId).classList.add('active');
         });
+    });
 
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                const kategori = button.dataset.kategori;
-                loadBahanBaku(kategori);
-            });
+    // Filter Kategori Bahan Baku
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const kategori = button.dataset.kategori;
+            loadBahanBaku(kategori);
         });
+    });
 
-        // Tombol Tambah Bahan di Form Resep
-        const addResepItemBtn = document.getElementById('add-resep-item-btn');
-        if (addResepItemBtn) {
-            addResepItemBtn.addEventListener('click', () => {
-                openPilihBahanModal();
-            });
-        }
-
-        // Tombol Batal di dalam Modal Pilih Bahan
-        const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
-        if (cancelPilihBahanBtn) {
-            cancelPilihBahanBtn.addEventListener('click', () => {
-                document.getElementById('pilih-bahan-modal').classList.add('hidden');
-            });
-        }
+    // Tombol Tambah Bahan di Form Resep
+    const addResepItemBtn = document.getElementById('add-resep-item-btn');
+    if (addResepItemBtn) {
+        addResepItemBtn.addEventListener('click', () => {
+            openPilihBahanModal();
+        });
     }
+
+    // Tombol Batal di dalam Modal Pilih Bahan
+    const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
+    if (cancelPilihBahanBtn) {
+        cancelPilihBahanBtn.addEventListener('click', () => {
+            document.getElementById('pilih-bahan-modal').classList.add('hidden');
+        });
+    }
+    
+    // ==========================================================
+    // BAGIAN BARU DITAMBAHKAN DI SINI
+    // ==========================================================
+
+    // Tombol "+ Buat Bahan Mentah Baru" di dalam Modal
+    const buatBahanBaruCepatBtn = document.getElementById('buat-bahan-baru-cepat-btn');
+    if (buatBahanBaruCepatBtn) {
+        buatBahanBaruCepatBtn.addEventListener('click', () => {
+            console.log("Tombol buat bahan baru cepat diklik");
+            // Sembunyikan modal pilih bahan, tampilkan modal tambah cepat
+            document.getElementById('pilih-bahan-modal').classList.add('hidden');
+            document.getElementById('tambah-bahan-cepat-modal').classList.remove('hidden');
+        });
+    }
+
+    // Tombol Batal di Modal Tambah Bahan Cepat
+    const cancelTambahCepatBtn = document.getElementById('cancel-tambah-cepat-btn');
+    if (cancelTambahCepatBtn) {
+        cancelTambahCepatBtn.addEventListener('click', () => {
+            document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden');
+        });
+    }
+
+    // Tab Bahan Mentah & Setengah Jadi di Modal Pilih Bahan
+    const bahanSourceTabs = document.querySelectorAll('.bahan-source-btn');
+    if (bahanSourceTabs) {
+        bahanSourceTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                bahanSourceTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const source = tab.dataset.source;
+                if (source === 'bahan_baku') {
+                    // Tampilkan lagi daftar bahan baku
+                    openPilihBahanModal(); 
+                } else {
+                    // Untuk produk setengah jadi, fiturnya belum kita buat
+                    document.getElementById('bahan-search-results').innerHTML = '<li>Fitur Produk Setengah Jadi sedang dalam pengembangan.</li>';
+                    alert('Fitur Produk Setengah Jadi belum tersedia.');
+                }
+            });
+        });
+    }
+}
 
     // -------------------------------------------------------------
     // BAGIAN 5: JALANKAN APLIKASI
