@@ -1,6 +1,6 @@
 // =================================================================
-// DIBUAT ULANG OLEH CICI PADA 10 JULI 2025
-// TUJUAN: MENGHILANGKAN SEMUA SYNTAX ERROR
+// DIBUAT ULANG OLEH CICI - VERSI FINAL UNTUK LOGIN
+// Disesuaikan dengan struktur HTML yang punya form login & signup terpisah
 // =================================================================
 
 // Menunggu seluruh halaman HTML siap sebelum menjalankan JavaScript
@@ -26,11 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
     const userEmailDisplay = document.getElementById('user-email-display');
     const logoutButton = document.getElementById('logout-button');
-    const authForm = document.getElementById('auth-form');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const messageDiv = document.getElementById('message');
-    console.log('Elemen-elemen DOM berhasil dipilih.');
+    // Kita tidak butuh messageDiv di sini karena form-nya terpisah
+
+    console.log('Elemen-elemen DOM utama berhasil dipilih.');
 
     // -------------------------------------------------------------
     // BAGIAN 3: FUNGSI-FUNGSI UTAMA
@@ -44,65 +42,84 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             // Jika user ADA (sudah login)
             console.log("User terdeteksi:", user.email, "Menampilkan aplikasi.");
-            authContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-            userEmailDisplay.textContent = user.email;
+            if (authContainer) authContainer.classList.add('hidden');
+            if (appContainer) appContainer.classList.remove('hidden');
+            if (userEmailDisplay) userEmailDisplay.textContent = user.email;
         } else {
             // Jika user NULL (belum login / sudah logout)
             console.log("User tidak terdeteksi, menampilkan halaman login.");
-            authContainer.classList.remove('hidden');
-            appContainer.classList.add('hidden');
-            userEmailDisplay.textContent = '';
+            if (authContainer) authContainer.classList.remove('hidden');
+            if (appContainer) appContainer.classList.add('hidden');
+            if (userEmailDisplay) userEmailDisplay.textContent = '';
         }
     }
 
     /**
      * Fungsi utama yang menjalankan semua logika otentikasi.
+     * VERSI BARU: Mengenali form login dan signup yang terpisah.
      */
     function initAuth() {
         console.log('Menjalankan initAuth...');
 
-        // Listener untuk form login/signup
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            messageDiv.textContent = 'Memproses...';
+        // Ambil elemen form login dan signup dari HTML
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
 
-            // Coba login
-            const { error: loginError } = await _supabase.auth.signInWithPassword({ email, password });
+        // --- Event Listener untuk Form LOGIN ---
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                alert('Mencoba login...'); // Menggunakan alert untuk sementara
 
-            if (loginError) {
-                // Jika login gagal, coba daftar (signup)
-                console.log("Login gagal, mencoba mendaftar...");
-                const { error: signUpError } = await _supabase.auth.signUp({ email, password });
-                
-                if (signUpError) {
-                    console.error("Error saat signup:", signUpError.message);
-                    messageDiv.textContent = `Error: ${signUpError.message}`;
+                const { error } = await _supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    console.error("Error saat login:", error.message);
+                    alert(`Login Gagal: ${error.message}`);
+                } else {
+                    console.log("Login berhasil!");
+                    // Tampilan akan diurus oleh onAuthStateChange
+                }
+            });
+        }
+
+        // --- Event Listener untuk Form SIGNUP ---
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                alert('Mendaftarkan akun...'); // Menggunakan alert untuk sementara
+
+                const { error } = await _supabase.auth.signUp({ email, password });
+
+                if (error) {
+                    console.error("Error saat signup:", error.message);
+                    alert(`Daftar Gagal: ${error.message}`);
                 } else {
                     console.log("Signup berhasil, cek email untuk verifikasi.");
-                    messageDiv.textContent = 'Pendaftaran berhasil! Cek email untuk verifikasi.';
+                    alert('Pendaftaran berhasil! Silakan cek email kamu untuk verifikasi.');
                 }
-            } else {
-                console.log("Login berhasil!");
-                messageDiv.textContent = '';
-            }
-        });
+            });
+        }
+
 
         // Listener untuk tombol logout
-        logoutButton.addEventListener('click', async () => {
-            console.log("Tombol logout diklik.");
-            await _supabase.auth.signOut();
-        });
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                console.log("Tombol logout diklik.");
+                await _supabase.auth.signOut();
+            });
+        }
 
-        // Listener untuk memantau perubahan status login (jantungnya ada di sini)
+        // Listener untuk memantau perubahan status login
         _supabase.auth.onAuthStateChange((_event, session) => {
-            console.log("Status otentikasi berubah, event:", _event);
+            console.log("Status otentikasi berubah.");
             const user = session ? session.user : null;
             setupUI(user);
         });
-
     }
 
     // -------------------------------------------------------------
@@ -117,4 +134,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
     initAuth();
 
-}); // <-- Penutup untuk document.addEventListener('DOMContentLoaded', ...)
+});
