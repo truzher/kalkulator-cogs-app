@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // BAGIAN 1: KONEKSI & VARIABEL GLOBAL
     // -------------------------------------------------------------
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'KUNCI_ANON_PROYEK_LOE'; // <- JANGAN LUPA GANTI INI
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- JANGAN LUPA GANTI INI
 
     const { createClient } = supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
