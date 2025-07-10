@@ -1,12 +1,12 @@
 // =================================================================
-// KODE FINAL SEBENARNYA - SEMUA FITUR & LISTENER LENGKAP
+// KODE FINAL SEBENARNYA - DIRAKIT ULANG DARI FILE LENGKAP
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- PASTIKAN INI DIGANTI
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss';
     const { createClient } = window.supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let masterBahanList = [];
@@ -71,19 +71,150 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- BAGIAN 4: LOGIKA APLIKASI ---
-    async function loadBahanBaku(kategoriFilter = 'Semua') { /* ... (Tidak ada perubahan di sini) ... */ }
-    function populateEditForm(id) { /* ... (Tidak ada perubahan di sini) ... */ }
-    async function handleHapusBahan(id) { /* ... (Tidak ada perubahan di sini) ... */ }
-    function renderPilihBahanList(bahanList) { /* ... (Tidak ada perubahan di sini) ... */ }
-    function tambahBahanKeResep(bahanInfo) { /* ... (Tidak ada perubahan di sini) ... */ }
-    function openPilihBahanModal() { /* ... (Tidak ada perubahan di sini) ... */ }
-    function kalkulasiFinal() { /* ... (Tidak ada perubahan di sini) ... */ }
-    function hitungTotalHppBahan() { /* ... (Tidak ada perubahan di sini) ... */ }
-    async function handleSimpanProduk(e) { /* ... (Tidak ada perubahan di sini) ... */ }
-    
-    // --- BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER (VERSI GABUNGAN LENGKAP) ---
+    async function loadBahanBaku(kategoriFilter = 'Semua') {
+        if (!masterBahanTableBody) return;
+        let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        if (kategoriFilter !== 'Semua') { query = query.eq('kategori', kategoriFilter); }
+        const { data, error } = await query;
+        if (error) { console.error("Gagal memuat bahan baku:", error.message); return; }
+        masterBahanList = data;
+        masterBahanTableBody.innerHTML = '';
+        if (data.length === 0) {
+            masterBahanTableBody.innerHTML = `<tr><td colspan="4">Tidak ada bahan baku.</td></tr>`;
+            return;
+        }
+        data.forEach(bahan => {
+            const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+            const row = document.createElement('tr');
+            row.dataset.id = bahan.id;
+            row.innerHTML = `
+                <td>${bahan.nama || 'N/A'}</td>
+                <td>${bahan.kategori || 'N/A'}</td>
+                <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(hargaPerSatuan)} / ${bahan.satuan_kemasan || ''}</td>
+                <td><button class="edit-btn">Edit</button> <button class="delete-btn">Hapus</button></td>
+            `;
+            masterBahanTableBody.appendChild(row);
+        });
+    }
+
+    function populateEditForm(id) {
+        const bahan = masterBahanList.find(b => b.id == id);
+        if (!bahan) return;
+        document.getElementById('edit-bahan-id').value = bahan.id;
+        document.getElementById('edit-bahan-nama').value = bahan.nama;
+        document.getElementById('edit-bahan-kategori').value = bahan.kategori;
+        document.getElementById('edit-harga-beli-kemasan').value = bahan.harga_beli_kemasan;
+        document.getElementById('edit-isi-kemasan').value = bahan.isi_kemasan;
+        document.getElementById('edit-satuan-kemasan').value = bahan.satuan_kemasan;
+        if(editModal) editModal.classList.remove('hidden');
+    }
+
+    async function handleHapusBahan(id) {
+        if (confirm('Yakin mau hapus bahan ini?')) {
+            const { error } = await _supabase.from('bahan_baku').delete().eq('id', id);
+            if (error) { alert('Gagal hapus bahan: ' + error.message); } 
+            else {
+                alert('Bahan berhasil dihapus.');
+                loadBahanBaku();
+            }
+        }
+    }
+
+    function renderPilihBahanList(bahanList) {
+        const searchResults = document.getElementById('bahan-search-results');
+        if(!searchResults) return;
+        searchResults.innerHTML = '';
+        if (bahanList.length === 0) {
+            searchResults.innerHTML = '<li>Bahan tidak ditemukan.</li>';
+        } else {
+            bahanList.forEach(bahan => {
+                const li = document.createElement('li');
+                const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
+                li.textContent = `${bahan.nama} (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(hargaPerSatuan)} / ${bahan.satuan_kemasan})`;
+                li.dataset.bahanId = bahan.id; li.dataset.source = 'bahan_baku'; li.dataset.nama = bahan.nama; li.dataset.harga = hargaPerSatuan;
+                li.classList.add('search-result-item');
+                searchResults.appendChild(li);
+            });
+        }
+    }
+
+    function tambahBahanKeResep(bahanInfo) {
+        const resepTableBody = document.getElementById('resep-table-body');
+        if(!resepTableBody) return;
+        const row = document.createElement('tr');
+        row.dataset.bahanId = bahanInfo.bahanId; row.dataset.source = bahanInfo.source; row.dataset.harga = bahanInfo.harga;
+        row.innerHTML = `
+            <td>${bahanInfo.nama}</td>
+            <td><input type="number" class="resep-jumlah" placeholder="0" min="0" step="any"></td>
+            <td class="resep-biaya">Rp 0,00</td>
+            <td><button class="resep-delete-btn">Hapus</button></td>
+        `;
+        resepTableBody.appendChild(row);
+        document.getElementById('pilih-bahan-modal').classList.add('hidden');
+        kalkulasiFinal();
+    }
+
+    function openPilihBahanModal() {
+        const modal = document.getElementById('pilih-bahan-modal');
+        const searchInput = document.getElementById('search-bahan-input');
+        if (!modal || !searchInput) return;
+        searchInput.value = '';
+        renderPilihBahanList(masterBahanList);
+        modal.classList.remove('hidden');
+    }
+
+    function kalkulasiFinal() {
+        const semuaBahan = document.querySelectorAll('#resep-table-body tr');
+        let hppBahanBaku = 0;
+        semuaBahan.forEach(row => {
+            const biayaText = row.querySelector('.resep-biaya').textContent;
+            const biayaAngka = parseFloat(biayaText.replace(/[^0-9,-]+/g, "").replace(",", "."));
+            if (!isNaN(biayaAngka)) { hppBahanBaku += biayaAngka; }
+        });
+
+        const overheadCost = parseFloat(document.getElementById('overhead-cost').value) || 0;
+        const overheadType = document.getElementById('overhead-type').value;
+        const laborCost = parseFloat(document.getElementById('labor-cost').value) || 0;
+        const errorCostPercent = parseFloat(document.getElementById('error-cost-percent').value) || 0;
+        const targetMarginPercent = parseFloat(document.getElementById('target-margin-percent').value) || 0;
+        const hargaJualAktual = parseFloat(document.getElementById('harga-jual-aktual').value) || 0;
+        
+        let overheadNominal = overheadCost;
+        if (overheadType === 'persen' && hppBahanBaku > 0) {
+            overheadNominal = hppBahanBaku * (overheadCost / 100);
+        }
+        
+        const hppSebelumError = hppBahanBaku + overheadNominal + laborCost;
+        const errorCostNominal = hppSebelumError * (errorCostPercent / 100);
+        const totalHPP = hppSebelumError + errorCostNominal;
+
+        let saranHargaJual = 0;
+        if (targetMarginPercent < 100 && targetMarginPercent >= 0) {
+            saranHargaJual = totalHPP / (1 - (targetMarginPercent / 100));
+        }
+
+        let profitNominal = 0;
+        let profitPercent = 0;
+        if (hargaJualAktual > 0) {
+            profitNominal = hargaJualAktual - totalHPP;
+            profitPercent = (profitNominal / hargaJualAktual) * 100;
+        }
+
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(angka);
+        
+        document.getElementById('total-cogs-display').textContent = formatRupiah(totalHPP);
+        document.getElementById('saran-harga-display').textContent = formatRupiah(saranHargaJual);
+        document.getElementById('profit-display').textContent = formatRupiah(profitNominal);
+        document.getElementById('profit-percent-display').textContent = `${profitPercent.toFixed(2)}%`;
+    }
+
+    function hitungTotalHppBahan() {
+        // Fungsi ini sekarang digantikan oleh kalkulasiFinal() yang lebih lengkap
+        kalkulasiFinal();
+    }
+
+    // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
     function setupAppEventListeners() {
-        // === Listener CRUD Master Bahan ===
         if (masterBahanForm) {
             masterBahanForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -134,7 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (cancelEditBtn) { cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden')); }
 
-        // === Listener Navigasi & Filter Halaman ===
         const navButtons = document.querySelectorAll('.nav-button');
         const pages = document.querySelectorAll('.page');
         navButtons.forEach(button => {
@@ -145,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById(button.dataset.page).classList.add('active');
             });
         });
+
         const filterButtons = document.querySelectorAll('.filter-btn');
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -154,7 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         
-        // === Listener Halaman Kalkulator & Semua Modal ===
         const addResepItemBtn = document.getElementById('add-resep-item-btn');
         if (addResepItemBtn) { addResepItemBtn.addEventListener('click', openPilihBahanModal); }
         
@@ -205,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resepTableBody.addEventListener('click', (e) => {
                 if (e.target && e.target.classList.contains('resep-delete-btn')) {
                     e.target.closest('tr').remove();
-                    hitungTotalHppBahan();
+                    kalkulasiFinal();
                 }
             });
             resepTableBody.addEventListener('input', (e) => {
@@ -220,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         biayaCell.textContent = 'Rp 0,00';
                     }
-                    hitungTotalHppBahan();
+                    kalkulasiFinal();
                 }
             });
         }
