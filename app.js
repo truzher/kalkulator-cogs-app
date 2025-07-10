@@ -68,20 +68,7 @@ function setupUI(user) {
         }, 0);
     };
     
-    // === FUNGSI UTAMA UNTUK MENGATUR TAMPILAN & EVENT LISTENER ===
-    const setupUI = (user) => {
-        const authContainer = document.getElementById('auth-container');
-        const appContainer = document.getElementById('app-container');
         
-        if (user) {
-            currentUser = user;
-            if (authContainer) authContainer.classList.add('hidden');
-            if (appContainer) {
-                appContainer.classList.remove('hidden');
-                const userEmailDisplay = document.getElementById('user-email-display');
-                if (userEmailDisplay) userEmailDisplay.textContent = user.email;
-            }
-            
             loadBahanBaku();
             loadProduk();
             
