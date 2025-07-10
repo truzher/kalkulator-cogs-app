@@ -87,7 +87,7 @@ function setupUI(user) {
         const masterBahanTableBody = document.getElementById('master-bahan-table-body');
         if (!masterBahanTableBody) return;
 
-        let query = supabaseClient.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
         if (kategoriFilter !== 'Semua') {
             query = query.eq('kategori', kategoriFilter);
         }
