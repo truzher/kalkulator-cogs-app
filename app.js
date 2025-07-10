@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
     // BAGIAN 1: KONEKSI & KONFIGURASI AWAL
     // -------------------------------------------------------------
-    const SUPABASE_URL = 'https://ubfbsmhyshosilhaewis.supabase.co'; // <- INI SUDAH CICI SESUAIKAN DARI SCREENSHOT
+    const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co'; // <- INI SUDAH CICI SESUAIKAN DARI SCREENSHOT
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- JANGAN LUPA GANTI INI
 
     const { createClient } = supabase;
