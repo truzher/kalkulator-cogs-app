@@ -214,8 +214,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // === Listener Halaman Kalkulator & Semua Modal ===
-        const addResepItemBtn = document.getElementById('add-resep-item-btn');
-        if (addResepItemBtn) { addResepItemBtn.addEventListener('click', openPilihBahanModal); }
+        // --- Listener Halaman Kalkulator & Semua Modal (DENGAN DEBUG) ---
+const addResepItemBtn = document.getElementById('add-resep-item-btn');
+console.log('DEBUG: Mencari tombol #add-resep-item-btn:', addResepItemBtn);
+
+if (addResepItemBtn) {
+    console.log('DEBUG: Tombol ditemukan, memasang listener...');
+    addResepItemBtn.addEventListener('click', () => {
+        console.log('DEBUG: Tombol + Tambah Bahan diklik!');
+        openPilihBahanModal();
+    });
+} else {
+    console.error('DEBUG: ERROR! Tombol #add-resep-item-btn TIDAK DITEMUKAN di HTML.');
+}
         
         const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
         if (cancelPilihBahanBtn) { cancelPilihBahanBtn.addEventListener('click', () => document.getElementById('pilih-bahan-modal').classList.add('hidden')); }
