@@ -76,7 +76,7 @@ function setupUI(user) {
                 setupAppEventListeners();
                 appContainer.dataset.listenersAttached = 'true';
             }
-        } else {
+    else {
             currentUser = null;
             if (authContainer) authContainer.classList.remove('hidden');
             if (appContainer) appContainer.classList.add('hidden');
