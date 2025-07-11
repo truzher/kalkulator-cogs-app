@@ -78,31 +78,43 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadProdukSetengahJadi();
     }
     
-    async function loadBahanBaku(kategoriFilter = 'Semua') {
-        if (!masterBahanTableBody) return;
-        let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
-        if (kategoriFilter !== 'Semua') { query = query.eq('kategori', kategoriFilter); }
-        const { data, error } = await query;
-        if (error) { console.error("Gagal memuat bahan baku:", error.message); return; }
-        masterBahanList = data;
-        masterBahanTableBody.innerHTML = '';
-        if (data.length === 0) {
-            masterBahanTableBody.innerHTML = `<tr><td colspan="4">Tidak ada bahan baku.</td></tr>`;
-            return;
-        }
-        data.forEach(bahan => {
-            const hargaPerSatuan = (bahan.harga_beli_kemasan && bahan.isi_kemasan > 0) ? (bahan.harga_beli_kemasan / bahan.isi_kemasan) : 0;
-            const row = document.createElement('tr');
-            row.dataset.id = bahan.id;
-            row.innerHTML = `
-                <td>${bahan.nama || 'N/A'}</td>
-                <td>${bahan.kategori || 'N/A'}</td>
-                <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(hargaPerSatuan)} / ${bahan.satuan_kemasan || ''}</td>
-                <td><button class="edit-btn">Edit</button> <button class="delete-btn">Hapus</button></td>
-            `;
-            masterBahanTableBody.appendChild(row);
-        });
+    async function loadProdukJadi() {
+    console.log("Memuat daftar produk jadi...");
+    const produkTableBody = document.getElementById('produk-table-body');
+    if (!produkTableBody) return;
+
+    // Ambil data dari tabel 'produk_jadi'
+    const { data, error } = await _supabase.from('produk_jadi').select('*').order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Gagal memuat produk jadi:", error.message);
+        return;
     }
+
+    produkTableBody.innerHTML = ''; // Kosongkan tabel dulu
+    if (data.length === 0) {
+        produkTableBody.innerHTML = '<tr><td colspan="5">Belum ada produk yang disimpan.</td></tr>';
+        return;
+    }
+
+    // Tampilkan setiap produk sebagai baris baru di tabel
+    data.forEach(produk => {
+        const row = document.createElement('tr');
+        const tipeProduk = produk.hasil_jadi_jumlah ? 'Setengah Jadi' : 'Produk Jadi';
+        
+        row.innerHTML = `
+            <td>${produk.nama_produk || 'N/A'}</td>
+            <td><span class="chip-kategori">${tipeProduk}</span></td>
+            <td>${produk.kategori_produk || 'N/A'}</td>
+            <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(produk.saran_harga_jual || 0)}</td>
+            <td>
+                <button class="button-edit">Lihat/Edit</button>
+                <button class="button-delete">Hapus</button>
+            </td>
+        `;
+        produkTableBody.appendChild(row);
+    });
+}
 
     async function loadProdukSetengahJadi() {
         const { data, error } = await _supabase.from('produk_setengah_jadi').select('*');
