@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadDataAwal() {
         await loadBahanBaku();
         await loadProdukSetengahJadi();
+        await loadProdukJadi();
     }
     
     async function loadProdukJadi() {
