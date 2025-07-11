@@ -1,13 +1,13 @@
 // =================================================================
-// KODE MASTER FINAL - 12 JULI 2025
-// SEMUA FITUR & PERBAIKAN TELAH DIGABUNGKAN DENGAN BENAR
+// MASTER CODE v1.0 - 12 JULI 2025
+// FONDASI STABIL UNTUK SEMUA PENGEMBANGAN SELANJUTNYA
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- GANTI DENGAN KUNCI ASLI LOE
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- PASTIKAN INI DIGANTI
     const { createClient } = window.supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let masterBahanList = [];
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadProdukSetengahJadi() {
-        const { data, error } = await _supabase.from('produk_setengah_jadi').select('*');
+        const { data, error } = await _supabase.from('produk_setengah_jadi').select('*').order('created_at', { ascending: false });
         if (error) { console.error("Gagal memuat produk setengah jadi:", error.message); produkSetengahJadiList = []; } 
         else { produkSetengahJadiList = data; }
     }
@@ -164,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleHapusProduk(id, namaProduk) {
         if (confirm(`Yakin mau hapus produk "${namaProduk}"?`)) {
+            // Asumsi sementara hapus dari produk_jadi, nanti bisa dikembangkan
             const { error } = await _supabase.from('produk_jadi').delete().eq('id', id);
             if (error) { alert('Gagal hapus produk: ' + error.message); } 
             else {
@@ -174,11 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function loadProdukToKalkulator(produkId) {
-        const { data: produk, error } = await _supabase.from('produk_jadi').select('*').eq('id', produkId).single();
-        if (error || !produk) {
-            alert('Gagal mengambil detail produk!');
-            return;
-        }
+        const { data: produk, error } = await _supabase.from('produk_jadi').select('*, resep(*)').eq('id', produkId).single();
+        if (error || !produk) { alert('Gagal mengambil detail produk!'); return; }
+        
         document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
         document.querySelector('.nav-button[data-page="page-kalkulator"]').classList.add('active');
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -208,9 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchResults = document.getElementById('bahan-search-results');
         if (!searchResults) return;
         searchResults.innerHTML = '';
-        if (list.length === 0) {
-            searchResults.innerHTML = `<li>Tidak ada ${sourceType.replace(/_/g, ' ')} tersedia.</li>`;
-        } else {
+        if (list.length === 0) { searchResults.innerHTML = `<li>Tidak ada ${sourceType.replace(/_/g, ' ')} tersedia.</li>`; } 
+        else {
             list.forEach(item => {
                 const li = document.createElement('li');
                 let nama, harga, satuan, id;
@@ -276,9 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetMarginPercent = parseFloat(document.getElementById('target-margin-percent').value) || 0;
         const hargaJualAktual = parseFloat(document.getElementById('harga-jual-aktual').value) || 0;
         let overheadNominal = overheadCost;
-        if (overheadType === 'persen' && hppBahanBaku > 0) {
-            overheadNominal = hppBahanBaku * (overheadCost / 100);
-        }
+        if (overheadType === 'persen' && hppBahanBaku > 0) { overheadNominal = hppBahanBaku * (overheadCost / 100); }
         const hppSebelumError = hppBahanBaku + overheadNominal + laborCost;
         const errorCostNominal = hppSebelumError * (errorCostPercent / 100);
         const totalHPP = hppSebelumError + errorCostNominal;
@@ -327,9 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
             produkData.hasil_jadi_satuan = document.getElementById('hasil-jadi-satuan').value || null;
         }
         
-        let error;
         if (isEditing && editingProdukId) {
-            ({ error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId));
+            const { error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId);
             if (error) {
                 alert('Gagal mengupdate produk: ' + error.message);
             } else {
@@ -337,8 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetKalkulator();
             }
         } else {
-            const { data, error: insertError } = await _supabase.from(targetTable).insert([produkData]).select();
-            error = insertError;
+            const { data, error } = await _supabase.from(targetTable).insert([produkData]).select();
             if (error) {
                 alert(`Gagal menyimpan produk: ${error.message}`);
             } else {
@@ -346,10 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetKalkulator();
             }
         }
-        if(!error) {
-            loadProdukJadi(); 
-            loadProdukSetengahJadi();
-        }
+        loadProdukJadi(); 
+        loadProdukSetengahJadi();
     }
 
     function resetKalkulator() {
@@ -425,6 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 pages.forEach(page => page.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(button.dataset.page).classList.add('active');
+                if (button.dataset.page === 'page-kalkulator') {
+                    resetKalkulator();
+                }
             });
         });
 
@@ -487,39 +482,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const resepTableBody = document.getElementById('resep-table-body');
-if (resepTableBody) {
-    console.log("DEBUG: Listener untuk tabel resep SIAP DIPASANG."); // DEBUG 1
-
-    resepTableBody.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('resep-delete-btn')) {
-            e.target.closest('tr').remove();
-            kalkulasiFinal();
+        if(resepTableBody) {
+            resepTableBody.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('resep-delete-btn')) {
+                    e.target.closest('tr').remove();
+                    kalkulasiFinal();
+                }
+            });
+            resepTableBody.addEventListener('input', (e) => {
+                if (e.target && e.target.classList.contains('resep-jumlah')) {
+                    const row = e.target.closest('tr');
+                    const hargaPerSatuan = parseFloat(row.dataset.harga);
+                    const jumlah = parseFloat(e.target.value);
+                    const biayaCell = row.querySelector('.resep-biaya');
+                    if (!isNaN(hargaPerSatuan) && !isNaN(jumlah) && jumlah >= 0) {
+                        const totalBiaya = hargaPerSatuan * jumlah;
+                        biayaCell.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalBiaya);
+                    } else {
+                        biayaCell.textContent = 'Rp 0,00';
+                    }
+                    kalkulasiFinal();
+                }
+            });
         }
-    });
-
-    resepTableBody.addEventListener('input', (e) => {
-        console.log("DEBUG: Aksi 'input' di dalam tabel resep TERDETEKSI!", e.target); // DEBUG 2
-
-        if (e.target && e.target.classList.contains('resep-jumlah')) {
-            console.log("DEBUG: Input di kolom 'Jumlah' dikenali."); // DEBUG 3
-
-            const row = e.target.closest('tr');
-            const hargaPerSatuan = parseFloat(row.dataset.harga);
-            const jumlah = parseFloat(e.target.value);
-            const biayaCell = row.querySelector('.resep-biaya');
-            if (!isNaN(hargaPerSatuan) && !isNaN(jumlah) && jumlah >= 0) {
-                const totalBiaya = hargaPerSatuan * jumlah;
-                biayaCell.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalBiaya);
-                console.log(`DEBUG: Biaya dihitung: ${totalBiaya}`); // DEBUG 4
-            } else {
-                biayaCell.textContent = 'Rp 0,00';
-            }
-            kalkulasiFinal();
-        }
-    });
-} else {
-    console.error("DEBUG: Elemen #resep-table-body TIDAK DITEMUKAN.");
-}
 
         const kalkulasiInputs = ['overhead-cost', 'overhead-type', 'labor-cost', 'error-cost-percent', 'target-margin-percent', 'harga-jual-aktual'];
         kalkulasiInputs.forEach(id => {
