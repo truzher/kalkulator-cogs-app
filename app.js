@@ -363,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isEditing = false;
         editingProdukId = null;
         document.querySelector('#hpp-form button[type="submit"]').textContent = 'Simpan Produk';
+        document.getElementById('jenis-produk-input').disabled = false;
         kalkulasiFinal();
     }
     
