@@ -228,39 +228,75 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('profit-percent-display').textContent = `${profitPercent.toFixed(2)}%`;
     }
 
-    async function handleSimpanProduk(e) {
-        e.preventDefault();
-        const tipeProduk = document.getElementById('jenis-produk-input').value;
-        const targetTable = (tipeProduk === 'Produk Jadi') ? 'produk_jadi' : 'produk_setengah_jadi';
-        const resepRows = document.querySelectorAll('#resep-table-body tr');
-        if (resepRows.length === 0) { alert('Resep tidak boleh kosong!'); return; }
-        const resepData = Array.from(resepRows).map(row => ({
-            bahan_id: row.dataset.bahanId, nama_bahan: row.cells[0].textContent, jumlah: row.querySelector('.resep-jumlah').value,
-            biaya: parseFloat(row.querySelector('.resep-biaya').textContent.replace(/[^0-9,-]+/g, "").replace(",", "."))
-        }));
-        const { data: { user } } = await _supabase.auth.getUser();
-        if (!user) { alert("Sesi tidak valid, silakan login ulang."); return; }
-        const produkData = {
-            user_id: user.id,
-            nama_produk: document.getElementById('produk-nama').value,
-            kategori_produk: document.getElementById('produk-kategori').value,
-            resep: resepData,
-            total_hpp: parseFloat(document.getElementById('total-cogs-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
-            saran_harga_jual: parseFloat(document.getElementById('saran-harga-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
-            profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
-            profit_persen: parseFloat(document.getElementById('profit-percent-display').textContent.replace('%', '')),
-            hasil_jadi_jumlah: parseFloat(document.getElementById('hasil-jadi-jumlah').value) || null,
-            hasil_jadi_satuan: document.getElementById('hasil-jadi-satuan').value || null,
-        };
-        if (!produkData.nama_produk) { alert('Nama produk harus diisi!'); return; }
-        const { data, error } = await _supabase.from(targetTable).insert([produkData]).select();
-        if (error) { alert(`Gagal menyimpan produk: ${error.message}`); } 
-        else {
-            alert(`Produk "${data[0].nama_produk}" berhasil disimpan!`);
-            if(hppForm) hppForm.reset(); document.getElementById('resep-table-body').innerHTML = ''; kalkulasiFinal();
-            if (targetTable === 'produk_setengah_jadi') { loadProdukSetengahJadi(); }
+   async function handleSimpanProduk(e) {
+    e.preventDefault();
+    console.log("Tombol Simpan Produk diklik.");
+
+    // --- Mengumpulkan data dasar & resep ---
+    const resepRows = document.querySelectorAll('#resep-table-body tr');
+    if (resepRows.length === 0) {
+        alert('Resep tidak boleh kosong!');
+        return;
+    }
+    const resepData = Array.from(resepRows).map(row => ({
+        bahan_id: row.dataset.bahanId,
+        nama_bahan: row.cells[0].textContent,
+        jumlah: row.querySelector('.resep-jumlah').value,
+        biaya: parseFloat(row.querySelector('.resep-biaya').textContent.replace(/[^0-9,-]+/g, "").replace(",", "."))
+    }));
+
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) {
+        alert("Sesi tidak valid, silakan login ulang.");
+        return;
+    }
+    
+    // --- Membangun objek data dasar ---
+    let produkData = {
+        user_id: user.id,
+        nama_produk: document.getElementById('produk-nama').value,
+        kategori_produk: document.getElementById('produk-kategori').value,
+        resep: resepData,
+        total_hpp: parseFloat(document.getElementById('total-cogs-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+        saran_harga_jual: parseFloat(document.getElementById('saran-harga-jual').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+        profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+        profit_persen: parseFloat(document.getElementById('profit-percent-display').textContent.replace('%', ''))
+    };
+
+    if (!produkData.nama_produk) {
+        alert('Nama produk harus diisi!');
+        return;
+    }
+
+    // --- Logika Cerdas: Tentukan target tabel & tambahkan data spesifik ---
+    const tipeProduk = document.getElementById('jenis-produk-input').value;
+    let targetTable;
+
+    if (tipeProduk === 'Produk Setengah Jadi') {
+        targetTable = 'produk_setengah_jadi';
+        // Hanya tambahkan kolom ini jika tipenya produk setengah jadi
+        produkData.hasil_jadi_jumlah = parseFloat(document.getElementById('hasil-jadi-jumlah').value) || null;
+        produkData.hasil_jadi_satuan = document.getElementById('hasil-jadi-satuan').value || null;
+    } else {
+        targetTable = 'produk_jadi';
+    }
+
+    console.log(`Mengirim data ke tabel: ${targetTable}`, produkData);
+    const { data, error } = await _supabase.from(targetTable).insert([produkData]).select();
+
+    if (error) {
+        alert('Gagal menyimpan produk: ' + error.message);
+        console.error('Error Supabase:', error);
+    } else {
+        alert(`Produk "${data[0].nama_produk}" berhasil disimpan!`);
+        if (hppForm) hppForm.reset();
+        document.getElementById('resep-table-body').innerHTML = '';
+        kalkulasiFinal();
+        if (targetTable === 'produk_setengah_jadi') {
+            loadProdukSetengahJadi();
         }
     }
+}
 
     // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
     function setupAppEventListeners() {
