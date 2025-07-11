@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetTable === 'produk_setengah_jadi') {
             loadProdukSetengahJadi();
         }
+        loadProdukJadi();
     }
 }
 
