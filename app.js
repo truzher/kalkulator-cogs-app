@@ -1,5 +1,5 @@
 // =================================================================
-// KODE FINAL - DENGAN FUNGSI initAuth YANG SUDAH DIPASTIKAN ADA
+// KODE FINAL - DENGAN PERBAIKAN LOGIKA UPDATE PRODUK
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -176,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function loadProdukToKalkulator(produkId) {
-        console.log(`Memuat produk dengan ID: ${produkId} ke kalkulator...`);
         const { data: produk, error } = await _supabase.from('produk_jadi').select('*').eq('id', produkId).single();
         if (error || !produk) {
             alert('Gagal mengambil detail produk!');
@@ -331,18 +330,29 @@ document.addEventListener('DOMContentLoaded', () => {
             produkData.hasil_jadi_jumlah = parseFloat(document.getElementById('hasil-jadi-jumlah').value) || null;
             produkData.hasil_jadi_satuan = document.getElementById('hasil-jadi-satuan').value || null;
         }
-        let error, data;
+        
         if (isEditing && editingProdukId) {
-            ({ data, error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId).select());
+            console.log(`Mengupdate produk dengan ID: ${editingProdukId}`);
+            const { error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId);
+            if (error) {
+                alert('Gagal mengupdate produk: ' + error.message);
+            } else {
+                alert(`Produk "${produkData.nama_produk}" berhasil diupdate!`);
+                resetKalkulator();
+                loadProdukJadi(); 
+                loadProdukSetengahJadi();
+            }
         } else {
-            ({ data, error } = await _supabase.from(targetTable).insert([produkData]).select());
-        }
-        if (error) { alert(`Gagal: ${error.message}`); } 
-        else {
-            alert(`Produk "${data[0].nama_produk}" berhasil diproses!`);
-            resetKalkulator();
-            loadProdukJadi(); 
-            loadProdukSetengahJadi();
+            console.log(`Menyimpan produk baru ke tabel: ${targetTable}`);
+            const { data, error } = await _supabase.from(targetTable).insert([produkData]).select();
+            if (error) {
+                alert(`Gagal menyimpan produk: ${error.message}`);
+            } else {
+                alert(`Produk "${data[0].nama_produk}" berhasil disimpan!`);
+                resetKalkulator();
+                loadProdukJadi(); 
+                loadProdukSetengahJadi();
+            }
         }
     }
 
