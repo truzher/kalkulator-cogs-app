@@ -1,5 +1,5 @@
 // =================================================================
-// KODE FINAL - DENGAN PERBAIKAN TYPO REGEX KRUSIAL
+// KODE FINAL - DENGAN FUNGSI EDIT PRODUK YANG SUDAH DIPERBAIKI
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -174,6 +174,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+    
+    async function loadProdukToKalkulator(produkId) {
+        console.log(`Memuat produk dengan ID: ${produkId} ke kalkulator...`);
+        let targetTable = 'produk_jadi';
+        const { data: produk, error } = await _supabase.from(targetTable).select('*').eq('id', produkId).single();
+        if (error || !produk) {
+            alert('Gagal mengambil detail produk!');
+            return;
+        }
+        document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.nav-button[data-page="page-kalkulator"]').classList.add('active');
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.getElementById('page-kalkulator').classList.add('active');
+        document.getElementById('produk-nama').value = produk.nama_produk;
+        document.getElementById('produk-kategori').value = produk.kategori_produk;
+        document.getElementById('harga-jual-aktual').value = produk.saran_harga_jual;
+        const resepTableBody = document.getElementById('resep-table-body');
+        resepTableBody.innerHTML = '';
+        if(produk.resep) {
+            produk.resep.forEach(item => {
+                const hargaSatuan = (item.biaya && item.jumlah > 0) ? item.biaya / item.jumlah : 0;
+                const bahanInfo = {
+                    nama: item.nama_bahan,
+                    bahanId: item.bahan_id,
+                    harga: hargaSatuan,
+                    source: item.source || 'bahan_baku'
+                };
+                tambahBahanKeResep(bahanInfo, item.jumlah);
+            });
+        }
+        isEditing = true;
+        editingProdukId = produkId;
+        document.querySelector('#hpp-form button[type="submit"]').textContent = 'Update Produk';
+        kalkulasiFinal();
+    }
 
     function renderPilihBahanList(list, sourceType) {
         const searchResults = document.getElementById('bahan-search-results');
@@ -293,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resep: resepData,
             total_hpp: parseFloat(document.getElementById('total-cogs-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
             saran_harga_jual: parseFloat(document.getElementById('saran-harga-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
-            profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")), // INI BARIS YANG DIPERBAIKI
+            profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
             profit_persen: parseFloat(document.getElementById('profit-percent-display').textContent.replace('%', ''))
         };
         if (!produkData.nama_produk) { alert('Nama produk harus diisi!'); return; }
@@ -503,7 +538,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+        
+        const resetHppBtn = document.getElementById('reset-hpp-btn');
+        if(resetHppBtn) {
+            resetHppBtn.addEventListener('click', resetKalkulator);
+        }
     }
     
+    // BAGIAN 6: JALANKAN APLIKASI
     initAuth();
 });
