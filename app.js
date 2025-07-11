@@ -1,12 +1,13 @@
 // =================================================================
-// KODE FINAL - DENGAN PERBAIKAN LOGIKA UPDATE PRODUK
+// KODE MASTER FINAL - 12 JULI 2025
+// SEMUA FITUR & PERBAIKAN TELAH DIGABUNGKAN DENGAN BENAR
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- PASTIKAN INI DIGANTI
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- GANTI DENGAN KUNCI ASLI LOE
     const { createClient } = window.supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let masterBahanList = [];
@@ -25,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBahanForm = document.getElementById('edit-bahan-form');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     const hppForm = document.getElementById('hpp-form');
+    const produkTableBody = document.getElementById('produk-table-body');
+    const resetHppBtn = document.getElementById('reset-hpp-btn');
     
     // --- BAGIAN 3: FUNGSI OTENTIKASI & UI ---
     function setupUI(user) {
@@ -113,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadProdukJadi() {
-        const produkTableBody = document.getElementById('produk-table-body');
         if (!produkTableBody) return;
         const { data, error } = await _supabase.from('produk_jadi').select('*').order('created_at', { ascending: false });
         if (error) { console.error("Gagal memuat produk jadi:", error.message); return; }
@@ -131,10 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="chip-kategori">Produk Jadi</span></td>
                 <td>${produk.kategori_produk || 'N/A'}</td>
                 <td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(produk.saran_harga_jual || 0)}</td>
-                <td>
-                    <button class="button-edit">Lihat/Edit</button>
-                    <button class="button-delete">Hapus</button>
-                </td>
+                <td><button class="button-edit">Lihat/Edit</button> <button class="button-delete">Hapus</button></td>
             `;
             produkTableBody.appendChild(row);
         });
@@ -166,9 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleHapusProduk(id, namaProduk) {
         if (confirm(`Yakin mau hapus produk "${namaProduk}"?`)) {
             const { error } = await _supabase.from('produk_jadi').delete().eq('id', id);
-            if (error) {
-                alert('Gagal hapus produk: ' + error.message);
-            } else {
+            if (error) { alert('Gagal hapus produk: ' + error.message); } 
+            else {
                 alert('Produk berhasil dihapus.');
                 loadProdukJadi();
             }
@@ -185,21 +183,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.nav-button[data-page="page-kalkulator"]').classList.add('active');
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         document.getElementById('page-kalkulator').classList.add('active');
+
+        document.getElementById('jenis-produk-input').disabled = true;
         document.getElementById('produk-nama').value = produk.nama_produk;
         document.getElementById('produk-kategori').value = produk.kategori_produk;
         document.getElementById('harga-jual-aktual').value = produk.saran_harga_jual;
-        document.getElementById('jenis-produk-input').disabled = true;
+        
         const resepTableBody = document.getElementById('resep-table-body');
         resepTableBody.innerHTML = '';
         if(produk.resep) {
             produk.resep.forEach(item => {
                 const hargaSatuan = (item.biaya && item.jumlah > 0) ? item.biaya / item.jumlah : 0;
-                const bahanInfo = {
-                    nama: item.nama_bahan,
-                    bahanId: item.bahan_id,
-                    harga: hargaSatuan,
-                    source: item.source || 'bahan_baku'
-                };
+                const bahanInfo = { nama: item.nama_bahan, bahanId: item.bahan_id, harga: hargaSatuan, source: item.source || 'bahan_baku' };
                 tambahBahanKeResep(bahanInfo, item.jumlah);
             });
         }
@@ -332,28 +327,28 @@ document.addEventListener('DOMContentLoaded', () => {
             produkData.hasil_jadi_satuan = document.getElementById('hasil-jadi-satuan').value || null;
         }
         
+        let error;
         if (isEditing && editingProdukId) {
-            console.log(`Mengupdate produk dengan ID: ${editingProdukId}`);
-            const { error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId);
+            ({ error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId));
             if (error) {
                 alert('Gagal mengupdate produk: ' + error.message);
             } else {
                 alert(`Produk "${produkData.nama_produk}" berhasil diupdate!`);
                 resetKalkulator();
-                loadProdukJadi(); 
-                loadProdukSetengahJadi();
             }
         } else {
-            console.log(`Menyimpan produk baru ke tabel: ${targetTable}`);
-            const { data, error } = await _supabase.from(targetTable).insert([produkData]).select();
+            const { data, error: insertError } = await _supabase.from(targetTable).insert([produkData]).select();
+            error = insertError;
             if (error) {
                 alert(`Gagal menyimpan produk: ${error.message}`);
             } else {
                 alert(`Produk "${data[0].nama_produk}" berhasil disimpan!`);
                 resetKalkulator();
-                loadProdukJadi(); 
-                loadProdukSetengahJadi();
             }
+        }
+        if(!error) {
+            loadProdukJadi(); 
+            loadProdukSetengahJadi();
         }
     }
 
@@ -367,6 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
         kalkulasiFinal();
     }
     
+    // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
     function setupAppEventListeners() {
         if (masterBahanForm) {
             masterBahanForm.addEventListener('submit', async (e) => {
@@ -531,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (produkTableBody) {
             produkTableBody.addEventListener('click', (e) => {
                 const targetRow = e.target.closest('tr');
-                if (!targetRow) return;
+                if (!targetRow || !targetRow.dataset.id) return;
                 const produkId = targetRow.dataset.id;
                 const namaProduk = targetRow.dataset.nama;
                 if (e.target.classList.contains('button-edit')) {
