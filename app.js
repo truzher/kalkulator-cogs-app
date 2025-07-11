@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         kategori_produk: document.getElementById('produk-kategori').value,
         resep: resepData,
         total_hpp: parseFloat(document.getElementById('total-cogs-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
-        saran_harga_jual: parseFloat(document.getElementById('saran-harga-jual').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
+        saran_harga_jual: parseFloat(document.getElementById('saran-harga-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
         profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
         profit_persen: parseFloat(document.getElementById('profit-percent-display').textContent.replace('%', ''))
     };
