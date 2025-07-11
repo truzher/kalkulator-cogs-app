@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('produk-nama').value = produk.nama_produk;
         document.getElementById('produk-kategori').value = produk.kategori_produk;
         document.getElementById('harga-jual-aktual').value = produk.saran_harga_jual;
+        document.getElementById('jenis-produk-input').disabled = true;
         const resepTableBody = document.getElementById('resep-table-body');
         resepTableBody.innerHTML = '';
         if(produk.resep) {
