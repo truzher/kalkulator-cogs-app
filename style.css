@@ -128,3 +128,48 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
     .nav-button { flex: 0 1 auto; padding: 12px 20px; }
     .modal-actions { flex-direction: row; }
 }
+/* === Gaya untuk Fitur Tooltip Bantuan === */
+.tooltip-trigger {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    color: #007bff;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Posisikan di atas elemen trigger */
+    left: 50%;
+    margin-left: -125px; /* Geser ke kiri setengah dari lebarnya */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* Panah di bawah tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.tooltip-trigger:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
