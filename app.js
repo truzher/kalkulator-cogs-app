@@ -15,8 +15,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let isEditing = false;
     let editingResepId = null;
 
-    // --- (BAGIAN 2: SELEKSI ELEMEN DOM tidak berubah) ---
-
+    // --- BAGIAN 2: SELEKSI ELEMEN DOM ---
+    const authContainer = document.getElementById('auth-container');
+    const appContainer = document.getElementById('app-container');
+    const userEmailDisplay = document.getElementById('user-email-display');
+    const logoutButton = document.getElementById('logout-button');
+    const masterBahanForm = document.getElementById('master-bahan-form');
+    const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+    const editModal = document.getElementById('edit-modal');
+    const editBahanForm = document.getElementById('edit-bahan-form');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const hppForm = document.getElementById('hpp-form');
+    const produkTableBody = document.getElementById('produk-table-body');
+    const resetHppBtn = document.getElementById('reset-hpp-btn');
+    
     // --- BAGIAN 3: FUNGSI OTENTIKASI & UI ---
     function setupUI(user) {
         if (user) {
@@ -31,20 +43,55 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userEmailDisplay) userEmailDisplay.textContent = user.email;
             loadDataAwal();
         } else {
-            // ... logika logout
+            if (authContainer) authContainer.classList.remove('hidden');
+            if (appContainer) appContainer.classList.add('hidden');
+            if (userEmailDisplay) userEmailDisplay.textContent = '';
         }
     }
 
-    function initAuth() { /* ... fungsi ini tidak berubah ... */ }
+    function initAuth() {
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const { error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) alert(`Login Gagal: ${error.message}`);
+            });
+        }
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const { error } = await _supabase.auth.signUp({ email, password });
+                if (error) { alert(`Daftar Gagal: ${error.message}`); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); }
+            });
+        }
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => await _supabase.auth.signOut());
+        }
+        _supabase.auth.onAuthStateChange((_event, session) => setupUI(session ? session.user : null));
+    }
 
-    // --- BAGIAN 4: LOGIKA APLIKASI (DIRANCANG ULANG) ---
+    // --- BAGIAN 4: LOGIKA APLIKASI ---
     async function loadDataAwal() {
         await loadBahanBaku();
         await loadSemuaResep();
-        renderProdukJadiTable(); // Tampilkan produk jadi di halaman default
+        renderProdukJadiTable();
     }
     
-    async function loadBahanBaku() { /* ... fungsi ini tidak berubah ... */ }
+    async function loadBahanBaku(kategoriFilter = 'Semua') {
+        if (!masterBahanTableBody) return;
+        let query = _supabase.from('bahan_baku').select('*').order('created_at', { ascending: false });
+        if (kategoriFilter !== 'Semua') { query = query.eq('kategori', kategoriFilter); }
+        const { data, error } = await query;
+        if (error) { console.error("Gagal memuat bahan baku:", error.message); return; }
+        masterBahanList = data || [];
+        // ... (sisanya sama)
+    }
 
     async function loadSemuaResep() {
         const { data, error } = await _supabase.from('resep').select('*').order('created_at', { ascending: false });
@@ -52,16 +99,13 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Gagal memuat resep:", error.message);
             semuaResepList = [];
         } else {
-            semuaResepList = data;
+            semuaResepList = data || [];
         }
     }
 
     function renderProdukJadiTable() {
-        const produkTableBody = document.getElementById('produk-table-body');
         if (!produkTableBody) return;
-        
         const produkJadiList = semuaResepList.filter(r => r.tipe_resep === 'PRODUK JADI');
-        
         produkTableBody.innerHTML = '';
         if (produkJadiList.length === 0) {
             produkTableBody.innerHTML = '<tr><td colspan="5">Belum ada produk jadi yang disimpan.</td></tr>';
@@ -82,7 +126,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ... (sisa fungsi seperti populateEditForm, handleHapusBahan, renderPilihBahanList, dll. perlu disesuaikan) ...
-    // Cici akan berikan versi lengkapnya yang sudah disesuaikan di bawah.
+    function populateEditForm(id) { /* ... fungsi ini tidak berubah ... */ }
+    async function handleHapusBahan(id) { /* ... fungsi ini tidak berubah ... */ }
 
+    // ... (Fungsi-fungsi lain yang perlu disesuaikan dengan struktur baru)
+    
+    // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
+    function setupAppEventListeners() {
+        // ... (semua listener akan disesuaikan dengan logika satu tabel 'resep')
+    }
+    
+    // BAGIAN 6: JALANKAN APLIKASI
+    initAuth();
 });
