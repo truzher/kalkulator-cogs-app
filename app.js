@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saran_harga_jual: parseFloat(document.getElementById('saran-harga-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
             profit: parseFloat(document.getElementById('profit-display').textContent.replace(/[^0-9,-]+/g, "").replace(",", ".")),
             profit_persen: parseFloat(document.getElementById('profit-percent-display').textContent.replace('%', '')),
-            hasil_jadi_jumlah: document.getElementById('hasil-jadi-jumlah').value || null,
+            hasil_jadi_jumlah: parseFloat(document.getElementById('hasil-jadi-jumlah').value) || null,
             hasil_jadi_satuan: document.getElementById('hasil-jadi-satuan').value || null,
         };
         if (!produkData.nama_produk) { alert('Nama produk harus diisi!'); return; }
