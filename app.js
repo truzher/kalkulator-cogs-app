@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Logika IF/ELSE untuk membedakan UPDATE atau INSERT
     if (isEditing && editingProdukId) {
         console.log(`Mengupdate produk dengan ID: ${editingProdukId}`);
-        const { data, error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId).select();
+    const { data, error } = await _supabase.from(targetTable).update(produkData).eq('id', editingProdukId).select();
         if (error) {
             alert('Gagal mengupdate produk: ' + error.message);
         } else {
