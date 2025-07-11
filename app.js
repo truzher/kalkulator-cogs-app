@@ -1,11 +1,6 @@
-// =================================================================
-// KODE MASTER v1.1 - 12 JULI 2025
-// PENAMBAHAN FITUR HAPUS PRODUK
-// =================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
+    // BAGIAN 1: KONEKSI & VARIABEL GLOBAL
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- PASTIKAN INI DIGANTI
     const { createClient } = window.supabase;
@@ -15,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isEditing = false;
     let editingProdukId = null;
 
-    // --- BAGIAN 2: SELEKSI ELEMEN DOM ---
+    // BAGIAN 2: SELEKSI ELEMEN DOM
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const userEmailDisplay = document.getElementById('user-email-display');
@@ -29,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const produkTableBody = document.getElementById('produk-table-body');
     const resetHppBtn = document.getElementById('reset-hpp-btn');
     
-    // --- BAGIAN 3: FUNGSI OTENTIKASI & UI ---
+    // BAGIAN 3: FUNGSI OTENTIKASI & UI
     function setupUI(user) {
         if (user) {
             if (authContainer) authContainer.classList.add('hidden');
@@ -76,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         _supabase.auth.onAuthStateChange((_event, session) => setupUI(session ? session.user : null));
     }
 
-    // --- BAGIAN 4: LOGIKA APLIKASI ---
+    // BAGIAN 4: LOGIKA APLIKASI
     async function loadDataAwal() {
         await loadBahanBaku();
         await loadProdukSetengahJadi();
@@ -164,12 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleHapusProduk(id, namaProduk) {
         if (confirm(`Yakin mau hapus produk "${namaProduk}"?`)) {
-            // Untuk sementara kita asumsikan hanya hapus dari produk_jadi.
-            // Nanti bisa dikembangkan untuk cek ke produk_setengah_jadi juga jika diperlukan.
             const { error } = await _supabase.from('produk_jadi').delete().eq('id', id);
-            if (error) {
-                alert('Gagal hapus produk: ' + error.message);
-            } else {
+            if (error) { alert('Gagal hapus produk: ' + error.message); } 
+            else {
                 alert('Produk berhasil dihapus.');
                 loadProdukJadi();
             }
@@ -186,10 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('page-kalkulator').classList.add('active');
 
         document.getElementById('jenis-produk-input').disabled = true;
+        document.getElementById('jenis-produk-input').value = 'Produk Jadi';
         document.getElementById('produk-nama').value = produk.nama_produk;
         document.getElementById('produk-kategori').value = produk.kategori_produk;
         document.getElementById('harga-jual-aktual').value = produk.saran_harga_jual;
         
+        const hasilJadiContainer = document.getElementById('hasil-jadi-container');
+        hasilJadiContainer.classList.add('hidden');
+
         const resepTableBody = document.getElementById('resep-table-body');
         resepTableBody.innerHTML = '';
         if(produk.resep) {
@@ -233,15 +229,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function tambahBahanKeResep(bahanInfo, jumlah = 0) {
+    function tambahBahanKeResep(bahanInfo, jumlah) {
         const resepTableBody = document.getElementById('resep-table-body');
         if(!resepTableBody) return;
         const row = document.createElement('tr');
         row.dataset.bahanId = bahanInfo.bahanId; row.dataset.source = bahanInfo.source; row.dataset.harga = bahanInfo.harga;
-        const biayaAwal = jumlah * parseFloat(bahanInfo.harga);
+        
+        const jumlahValue = jumlah !== undefined ? jumlah : '';
+        const biayaAwal = jumlah ? (jumlah * parseFloat(bahanInfo.harga)) : 0;
+
         row.innerHTML = `
             <td>${bahanInfo.nama}</td>
-            <td><input type="number" class="resep-jumlah" value="${jumlah}" min="0" step="any"></td>
+            <td><input type="number" class="resep-jumlah" placeholder="0" min="0" step="any" value="${jumlahValue}"></td>
             <td class="resep-biaya">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(biayaAwal)}</td>
             <td><button class="resep-delete-btn">Hapus</button></td>
         `;
@@ -419,6 +418,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 pages.forEach(page => page.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(button.dataset.page).classList.add('active');
+                if(button.dataset.page === 'page-kalkulator'){
+                    resetKalkulator();
+                }
             });
         });
 
@@ -536,6 +538,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const resetHppBtn = document.getElementById('reset-hpp-btn');
         if(resetHppBtn) {
             resetHppBtn.addEventListener('click', resetKalkulator);
+        }
+        
+        const jenisProdukInput = document.getElementById('jenis-produk-input');
+        const hasilJadiContainer = document.getElementById('hasil-jadi-container');
+        if(jenisProdukInput && hasilJadiContainer){
+            jenisProdukInput.addEventListener('change', () => {
+                if(jenisProdukInput.value === 'Produk Setengah Jadi'){
+                    hasilJadiContainer.classList.remove('hidden');
+                } else {
+                    hasilJadiContainer.classList.add('hidden');
+                }
+            });
         }
     }
     
