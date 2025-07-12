@@ -1,13 +1,13 @@
 // =================================================================
-// KODE MASTER v3.3 - 13 JULI 2025
-// PENAMBAHAN FITUR QUICK ADD BAHAN BAKU DARI MODAL
+// KODE MASTER v3.4 - 13 JULI 2025
+// MENGEMBALIKAN FUNGSI FILTER DI DAFTAR RESEP
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- GANTI DENGAN KUNCI ASLI LOE
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // GANTI DENGAN KUNCI ASLI LOE
     const { createClient } = window.supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let masterBahanList = [];
@@ -360,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- FUNGSI BARU UNTUK QUICK ADD ---
     async function handleSimpanBahanCepat(e) {
         e.preventDefault();
         const form = e.target;
@@ -383,8 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Bahan baru berhasil disimpan!');
             form.reset();
             document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden');
-            await loadBahanBaku(); // Muat ulang master bahan
-            openPilihBahanModal(); // Buka kembali modal pilih bahan
+            await loadBahanBaku(); 
+            openPilihBahanModal(); 
         }
     }
 
@@ -556,6 +555,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (hppForm) {
             hppForm.addEventListener('submit', handleSimpanResep);
+        }
+        
+        // KODE YANG DIKEMBALIKAN
+        const resepFilterButtons = document.querySelectorAll('.resep-filter-btn');
+        if (resepFilterButtons) {
+            resepFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    resepFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderProdukTable(button.dataset.tipe);
+                });
+            });
         }
 
         if (produkTableBody) {
