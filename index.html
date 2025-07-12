@@ -7,112 +7,74 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <div id="auth-container">
-        <div class="hero-section">
-            <h1>Hitung HPP Jadi Gampang ✨</h1>
-            <p class="subtitle">Ucapkan selamat tinggal pada spreadsheet rumit. Atur harga jual, lacak biaya, dan maksimalkan profit bisnismu dengan mudah.</p>
-        </div>
-        <div class="auth-box">
-            <form id="login-form" class="auth-form">
-                <h2>Masuk Akun</h2>
-                <input type="email" id="login-email" placeholder="Email kamu" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
-            <hr>
-            <form id="signup-form" class="auth-form">
-                <h2>Belum Punya Akun? Daftar Gratis!</h2>
-                <input type="email" id="signup-email" placeholder="Email kamu" required>
-                <input type="password" id="signup-password" placeholder="Password (min. 6 karakter)" required>
-                <button type="submit" class="button-secondary">Daftar Sekarang</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="app-container" class="hidden">
-        <header class="app-header">
-            <h1 class="app-title">Kalkulator HPP</h1>
-            <div class="user-menu">
-                <span id="user-email-display"></span>
-                <button id="logout-button">Logout</button>
+    <div class="container">
+        <div id="auth-container">
+            <div class="hero-section">
+                <h1>Hitung HPP Jadi Gampang ✨</h1>
+                <p class="subtitle">Ucapkan selamat tinggal pada spreadsheet rumit. Atur harga jual, lacak biaya, dan maksimalkan profit bisnismu dengan mudah.</p>
             </div>
-        </header>
-        
-        <nav class="main-nav">
-            <button class="nav-button active" data-page="page-bahan">Master Bahan</button>
-            <button class="nav-button" data-page="page-kalkulator">Kalkulator</button>
-            <button class="nav-button" data-page="page-produk">Daftar Resep</button>
-        </nav>
+            <div class="auth-box">
+                <form id="login-form" class="auth-form">
+                    <h2>Masuk Akun</h2>
+                    <input type="email" id="login-email" placeholder="Email kamu" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <hr>
+                <form id="signup-form" class="auth-form">
+                    <h2>Belum Punya Akun? Daftar Gratis!</h2>
+                    <input type="email" id="signup-email" placeholder="Email kamu" required>
+                    <input type="password" id="signup-password" placeholder="Password (min. 6 karakter)" required>
+                    <button type="submit" class="button-secondary">Daftar Sekarang</button>
+                </form>
+            </div>
+        </div>
 
-        <main id="app-content">
-            <div id="page-bahan" class="page active">
+        <div id="app-container" class="hidden">
+            <header class="app-header">
+                <h1 class="app-title">Kalkulator HPP</h1>
+                <div class="user-menu">
+                    <span id="user-email-display"></span>
+                    <button id="logout-button">Logout</button>
                 </div>
+            </header>
+            
+            <nav class="main-nav">
+                <button class="nav-button active" data-page="page-bahan">Master Bahan</button>
+                <button class="nav-button" data-page="page-kalkulator">Kalkulator</button>
+                <button class="nav-button" data-page="page-produk">Daftar Resep</button>
+            </nav>
 
-            <div id="page-kalkulator" class="page">
-                <div class="section">
-                    <h2>Buat Resep & Hitung HPP</h2>
-                    <form id="hpp-form">
-                        <div class="input-group">
-                             <div>
-                                 <label for="jenis-resep-input">Tipe Resep</label>
-                                 <select id="jenis-resep-input">
-                                     <option value="PRODUK JADI">Produk Jadi (Dijual)</option>
-                                     <option value="BAHAN OLAHAN">Bahan Olahan (Biang)</option>
-                                 </select>
-                             </div>
-                             <div>
-                                 <label for="resep-kategori">Kategori</label>
-                                 <select id="resep-kategori" required>
-                                     <option value="Minuman">Minuman</option>
-                                     <option value="Makanan">Makanan</option>
-                                     <option value="Lainnya">Lainnya</option>
-                                 </select>
-                             </div>
-                        </div>
-                        <label for="resep-nama">Nama Resep</label>
-                        <input type="text" id="resep-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
-                        
-                        <div id="hasil-jadi-container" class="hidden">
-                            <h3>
-                                Info Hasil Jadi (Yield)
-                                <span class="tooltip-trigger">(?)
-                                    <span class="tooltip-text">
-                                        Isi dengan jumlah produk yang <strong>benar-benar jadi</strong> setelah dimasak. Contoh: 1kg gula + 1L air mungkin hanya menghasilkan 1.5L sirup jadi. Angka ini penting untuk HPP yang akurat.
-                                    </span>
-                                </span>
-                            </h3>
-                            <div class="input-group">
-                                  <div>
-                                       <label for="hasil-jadi-jumlah">Jumlah Hasil Jadi</label>
-                                       <input type="number" id="hasil-jadi-jumlah" placeholder="cth: 1500">
-                                  </div>
-                                  <div>
-                                       <label for="hasil-jadi-satuan">Satuan Hasil Jadi</label>
-                                       <input type="text" id="hasil-jadi-satuan" placeholder="cth: ml, gram">
-                                  </div>
-                             </div>
-                        </div>
+            <main id="app-content">
+                <div id="page-bahan" class="page active">
+                    </div>
 
-                        <h3>Bahan Resep</h3>
+                <div id="page-kalkulator" class="page">
+                    </div>
+
+                <div id="page-produk" class="page">
+                    <div class="section">
+                        <h2>Daftar Resep Tersimpan</h2>
                         <div class="table-wrapper">
-                            <table id="resep-table">
-                                <thead><tr><th>Bahan</th><th>Jumlah</th><th>Biaya</th><th>Aksi</th></tr></thead>
-                                <tbody id="resep-table-body"></tbody>
+                            <table id="produk-table">
+                                <thead><tr><th>Nama Resep</th><th>Tipe</th><th>Kategori</th><th>Harga Jual</th><th>Aksi</th></tr></thead>
+                                <tbody id="produk-table-body"></tbody>
                             </table>
                         </div>
-                        <button type="button" id="add-resep-item-btn">+ Tambah Bahan</button>
-                        <hr>
-                        </form>
+                    </div>
                 </div>
-            </div>
-
-            <div id="page-produk" class="page">
-                </div>
-        </main>
+            </main>
+        </div>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js"></script>
+
+    <div id="edit-modal" class="modal-overlay hidden">
+        </div>
+    <div id="pilih-bahan-modal" class="modal-overlay hidden">
+        </div>
+    <div id="tambah-bahan-cepat-modal" class="modal-overlay hidden">
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
 </body>
 </html>
