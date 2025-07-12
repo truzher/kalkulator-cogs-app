@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="container">
-    <!-- Bagian Autentikasi -->
     <div id="auth-container">
         <div class="hero-section">
             <h1>Hitung HPP Jadi Gampang ✨</h1>
@@ -32,7 +30,6 @@
         </div>
     </div>
 
-    <!-- Bagian Aplikasi Utama -->
     <div id="app-container" class="hidden">
         <header class="app-header">
             <h1 class="app-title">Kalkulator HPP</h1>
@@ -45,83 +42,55 @@
         <nav class="main-nav">
             <button class="nav-button active" data-page="page-bahan">Master Bahan</button>
             <button class="nav-button" data-page="page-kalkulator">Kalkulator</button>
-            <button class="nav-button" data-page="page-produk">Daftar Produk</button>
+            <button class="nav-button" data-page="page-produk">Daftar Resep</button>
         </nav>
 
         <main id="app-content">
             <div id="page-bahan" class="page active">
-                <div class="section">
-                    <h2>Master Bahan Baku</h2>
-                    <p>Kelola semua bahan mentah kamu di sini.</p>
-                    <form id="master-bahan-form">
-                        <div class="input-group">
-                            <div style="flex: 2;"><label for="bahan-nama">Nama Bahan</label><input type="text" id="bahan-nama" placeholder="cth: Gula Aren Cair" required></div>
-                            <div style="flex: 1;"><label for="bahan-kategori">Kategori Bahan</label><select id="bahan-kategori" required><option value="Bahan Makanan">Bahan Makanan</option><option value="Bahan Minuman">Bahan Minuman</option><option value="Bahan Umum">Bahan Umum</option></select></div>
-                        </div>
-                        <div class="input-group">
-                            <div style="flex: 1.5;"><label for="harga-beli-kemasan">Harga Beli Kemasan (Rp)</label><input type="number" id="harga-beli-kemasan" placeholder="0" required></div>
-                            <div style="flex: 1;"><label for="isi-kemasan">Isi Kemasan</label><input type="number" id="isi-kemasan" placeholder="0" required></div>
-                            <div style="flex: 1;"><label for="satuan-kemasan">Satuan</label><input type="text" id="satuan-kemasan" placeholder="cth: ml, gram" required></div>
-                        </div>
-                        <button type="submit">Simpan Bahan</button>
-                    </form>
-                    <div class="table-controls">
-                        <div id="bahan-filter-container" class="filter-buttons">
-                            <button class="filter-btn active" data-kategori="Semua">Semua</button>
-                            <button class="filter-btn" data-kategori="Bahan Makanan">Makanan</button>
-                            <button class="filter-btn" data-kategori="Bahan Minuman">Minuman</button>
-                            <button class="filter-btn" data-kategori="Bahan Umum">Umum</button>
-                        </div>
-                    </div>
-                    <div class="table-wrapper">
-                        <table id="master-bahan-table">
-                            <thead><tr><th>Nama Bahan</th><th>Kategori</th><th>Harga/Satuan Dasar</th><th>Aksi</th></tr></thead>
-                            <tbody id="master-bahan-table-body"></tbody>
-                        </table>
-                    </div>
                 </div>
-            </div>
 
             <div id="page-kalkulator" class="page">
                 <div class="section">
                     <h2>Buat Resep & Hitung HPP</h2>
                     <form id="hpp-form">
                         <div class="input-group">
-                             <div style="flex: 1.5;">
-                                <label for="jenis-produk-input">Tipe Produk</label>
-                                <select id="jenis-produk-input">
-                                    <option value="Produk Jadi">Produk Jadi (Dijual)</option>
-                                    <option value="Produk Setengah Jadi">Produk Setengah Jadi (Biang)</option>
-                                </select>
-                            </div>
-                            <div style="flex: 1;">
-                                <label for="produk-kategori">Kategori</label>
-                                <select id="produk-kategori" required>
-                                    <option value="Minuman">Minuman</option>
-                                    <option value="Makanan">Makanan</option>
-                                    <option value="Lainnya">Lainnya</option>
-                                </select>
-                            </div>
+                             <div>
+                                 <label for="jenis-resep-input">Tipe Resep</label>
+                                 <select id="jenis-resep-input">
+                                     <option value="PRODUK JADI">Produk Jadi (Dijual)</option>
+                                     <option value="BAHAN OLAHAN">Bahan Olahan (Biang)</option>
+                                 </select>
+                             </div>
+                             <div>
+                                 <label for="resep-kategori">Kategori</label>
+                                 <select id="resep-kategori" required>
+                                     <option value="Minuman">Minuman</option>
+                                     <option value="Makanan">Makanan</option>
+                                     <option value="Lainnya">Lainnya</option>
+                                 </select>
+                             </div>
                         </div>
-                        <label for="produk-nama">Nama Produk</label>
-                        <input type="text" id="produk-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
+                        <label for="resep-nama">Nama Resep</label>
+                        <input type="text" id="resep-nama" placeholder="cth: Es Kopi Susu Gula Aren" required>
                         
                         <div id="hasil-jadi-container" class="hidden">
-                             <h3>Info Hasil Jadi (Yield)</h3>
-                             <div class="input-group">
-                                 <div>
-                                     <span class="tooltip-trigger">(?)
-        <span class="tooltip-text">
-            Isi dengan jumlah produk yang <strong>benar-benar jadi</strong> setelah dimasak. Contoh: 1kg gula + 1L air mungkin hanya menghasilkan 1.5L sirup jadi. Angka ini sangat penting untuk HPP yang akurat.
-        </span>
-    </span>
-</label>
-                                     <input type="number" id="hasil-jadi-jumlah" placeholder="cth: 1000">
-                                 </div>
-                                 <div>
-                                     <label for="hasil-jadi-satuan">Satuan Hasil Jadi</label>
-                                     <input type="text" id="hasil-jadi-satuan" placeholder="cth: ml, gram">
-                                 </div>
+                            <h3>
+                                Info Hasil Jadi (Yield)
+                                <span class="tooltip-trigger">(?)
+                                    <span class="tooltip-text">
+                                        Isi dengan jumlah produk yang <strong>benar-benar jadi</strong> setelah dimasak. Contoh: 1kg gula + 1L air mungkin hanya menghasilkan 1.5L sirup jadi. Angka ini penting untuk HPP yang akurat.
+                                    </span>
+                                </span>
+                            </h3>
+                            <div class="input-group">
+                                  <div>
+                                       <label for="hasil-jadi-jumlah">Jumlah Hasil Jadi</label>
+                                       <input type="number" id="hasil-jadi-jumlah" placeholder="cth: 1500">
+                                  </div>
+                                  <div>
+                                       <label for="hasil-jadi-satuan">Satuan Hasil Jadi</label>
+                                       <input type="text" id="hasil-jadi-satuan" placeholder="cth: ml, gram">
+                                  </div>
                              </div>
                         </div>
 
@@ -134,121 +103,16 @@
                         </div>
                         <button type="button" id="add-resep-item-btn">+ Tambah Bahan</button>
                         <hr>
-
-                        <div id="harga-jual-container">
-                            <h3>Biaya & Penentuan Harga</h3>
-                            <div class="input-group">
-                                <div style="flex: 2;"><label for="overhead-cost">Biaya Overhead</label><input type="number" id="overhead-cost" placeholder="0"></div>
-                                <div style="flex: 1;"><label for="overhead-type">Tipe</label><select id="overhead-type"><option value="nominal">Rp</option><option value="persen">%</option></select></div>
-                            </div>
-                            <div class="input-group">
-                                <div><label for="labor-cost">Tenaga Kerja/Porsi (Rp)</label><input type="number" id="labor-cost" placeholder="0"></div>
-                                <div><label for="error-cost-percent">Error Cost (%)</label><input type="number" id="error-cost-percent" placeholder="0"></div>
-                            </div>
-                            <div class="input-group">
-                                <div><label for="target-margin-percent">Target Margin (%)</label><input type="number" id="target-margin-percent" placeholder="0"></div>
-                                <div><label for="harga-jual-aktual">Harga Jual Aktual (Final)</label><input type="number" id="harga-jual-aktual" placeholder="0" required></div>
-                            </div>
-                        </div>
-
-                        <div class="hpp-summary">
-                            <h3>Total HPP (Modal): <span id="total-cogs-display">Rp 0,00</span></h3>
-                            <div id="saran-harga-wrapper">
-                                <h3 class="saran-harga">Saran Harga Jual: <span id="saran-harga-display">Rp 0,00</span></h3>
-                                <p>Profit: <span id="profit-display">Rp 0,00</span> (<span id="profit-percent-display">0.00</span>%)</p>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" id="reset-hpp-btn" class="button-secondary">Reset Form</button>
-                            <button type="submit">Simpan Produk</button>
-                        </div>
-                    </form>
+                        </form>
                 </div>
             </div>
 
             <div id="page-produk" class="page">
-                <div class="section">
-                    <h2>Daftar Produk Tersimpan</h2>
-                    <div class="table-wrapper">
-                        <table id="produk-table">
-                            <thead><tr><th>Nama Produk</th><th>Tipe</th><th>Kategori</th><th>Harga Jual</th><th>Aksi</th></tr></thead>
-                            <tbody id="produk-table-body"></tbody>
-                        </table>
-                    </div>
                 </div>
-            </div>
         </main>
     </div>
 </div>
-
-<!-- Modal Edit Bahan Baku -->
-<div id="edit-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h2>Edit Bahan Baku</h2>
-        <form id="edit-bahan-form">
-            <input type="hidden" id="edit-bahan-id">
-            <label for="edit-bahan-nama">Nama Bahan</label>
-            <input type="text" id="edit-bahan-nama" required>
-            <label for="edit-bahan-kategori">Kategori</label>
-            <select id="edit-bahan-kategori" required><option value="Bahan Makanan">Bahan Makanan</option><option value="Bahan Minuman">Bahan Minuman</option><option value="Bahan Umum">Bahan Umum</option></select>
-            <label for="edit-harga-beli-kemasan">Harga Beli Kemasan (Rp)</label>
-            <input type="number" id="edit-harga-beli-kemasan" required>
-            <div class="input-group">
-                <div><label for="edit-isi-kemasan">Isi</label><input type="number" id="edit-isi-kemasan" required></div>
-                <div><label for="edit-satuan-kemasan">Satuan</label><input type="text" id="edit-satuan-kemasan" required></div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" id="cancel-edit-btn">Batal</button>
-                <button type="submit">Simpan Perubahan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Pilih Bahan -->
-<div id="pilih-bahan-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h2>Pilih Bahan</h2>
-        <input type="text" id="search-bahan-input" placeholder="Ketik untuk mencari bahan...">
-        <div class="bahan-source-tabs">
-            <button class="bahan-source-btn active" data-source="bahan_baku">Bahan Mentah</button>
-            <button class="bahan-source-btn" data-source="produk_setengah_jadi">Produk Setengah Jadi (Biang)</button>
-        </div>
-        <ul id="bahan-search-results"></ul>
-        <div class="modal-actions">
-            <button type="button" id="buat-bahan-baru-cepat-btn" class="button-secondary">+ Buat Bahan Mentah Baru</button>
-            <button type="button" id="cancel-pilih-bahan-btn">Batal</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Tambah Bahan Cepat -->
-<div id="tambah-bahan-cepat-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h2>Tambah Bahan Baku Baru</h2>
-        <p>Bahan ini akan langsung ditambahkan ke Master Bahan Baku.</p>
-        <form id="master-bahan-cepat-form">
-            <label for="bahan-nama-cepat">Nama Bahan</label>
-            <input type="text" id="bahan-nama-cepat" required>
-            <label for="bahan-kategori-cepat">Kategori</label>
-            <select id="bahan-kategori-cepat" required><option value="Bahan Makanan">Bahan Makanan</option><option value="Bahan Minuman">Bahan Minuman</option><option value="Bahan Umum">Bahan Umum</option></select>
-            <label for="harga-beli-kemasan-cepat">Harga Beli Kemasan (Rp)</label>
-            <input type="number" id="harga-beli-kemasan-cepat" placeholder="0" required>
-            <div class="input-group">
-                <div><label for="isi-kemasan-cepat">Isi</label><input type="number" id="isi-kemasan-cepat" placeholder="0" required></div>
-                <div><label for="satuan-kemasan-cepat">Satuan</label><input type="text" id="satuan-kemasan-cepat" placeholder="cth: ml" required></div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" id="cancel-tambah-cepat-btn">Batal</button>
-                <button type="submit">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Script Tags -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
