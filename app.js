@@ -1,6 +1,6 @@
 // =================================================================
-// KODE MASTER v2.1 - 13 JULI 2025
-// ARSITEKTUR BARU + FITUR YIELD & BANTUAN LENGKAP
+// KODE MASTER v2.2 - 12 JULI 2025
+// PERBAIKAN FINAL SEMUA FUNGSI & LISTENER
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const jenisProdukInput = document.getElementById('jenis-produk-input');
         jenisProdukInput.value = resep.tipe_resep;
         jenisProdukInput.disabled = true;
-        jenisProdukInput.dispatchEvent(new Event('change')); // Trigger event change untuk menampilkan/menyembunyikan form yield
+        jenisProdukInput.dispatchEvent(new Event('change'));
 
         document.getElementById('produk-nama').value = resep.nama_resep;
         document.getElementById('produk-kategori').value = resep.kategori;
@@ -283,11 +283,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openPilihBahanModal() {
         const modal = document.getElementById('pilih-bahan-modal');
+        if (!modal) { console.error("Modal #pilih-bahan-modal tidak ditemukan!"); return; }
+        
         const searchInput = document.getElementById('search-bahan-input');
-        if (!modal || !searchInput) return;
-        searchInput.value = '';
+        if (searchInput) searchInput.value = '';
+        
         document.querySelector('.bahan-source-btn[data-source="bahan_baku"]').classList.add('active');
         document.querySelector('.bahan-source-btn[data-source="bahan_olahan"]').classList.remove('active');
+        
         renderPilihBahanList('bahan_baku');
         modal.classList.remove('hidden');
     }
@@ -483,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const searchInput = document.getElementById('search-bahan-input');
         if(searchInput) {
-            searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', () => {
                 const currentSource = document.querySelector('.bahan-source-btn.active').dataset.source;
                 renderPilihBahanList(currentSource);
             });
@@ -552,7 +555,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resetHppBtn.addEventListener('click', resetKalkulator);
         }
         
-        // INI DIA FITUR YANG HILANG
         const jenisProdukInput = document.getElementById('jenis-produk-input');
         const hasilJadiContainer = document.getElementById('hasil-jadi-container');
         if(jenisProdukInput && hasilJadiContainer){
