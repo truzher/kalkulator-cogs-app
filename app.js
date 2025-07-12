@@ -1,13 +1,12 @@
 // =================================================================
-// KODE MASTER v3.5 - 13 JULI 2025
-// PERBAIKAN FUNGSI initAuth() YANG HILANG & SEMUA FITUR LENGKAP
+// KODE MASTER v3.6 - 13 JULI 2025
+// PENAMBAHAN FITUR DAFTAR BELANJA
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- GANTI DENGAN KUNCI ASLI LOE
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // GANTI DENGAN KUNCI ASLI LOE
     const { createClient } = window.supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let masterBahanList = [];
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let isEditing = false;
     let editingResepId = null;
 
-    // --- BAGIAN 2: SELEKSI ELEMEN DOM ---
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const userEmailDisplay = document.getElementById('user-email-display');
@@ -29,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const produkTableBody = document.getElementById('produk-table-body');
     const resetHppBtn = document.getElementById('reset-hpp-btn');
     
-    // --- BAGIAN 3: FUNGSI OTENTIKASI & UI ---
     function setupUI(user) {
         if (user) {
             if (authContainer) authContainer.classList.add('hidden');
@@ -76,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         _supabase.auth.onAuthStateChange((_event, session) => setupUI(session ? session.user : null));
     }
 
-    // --- BAGIAN 4: LOGIKA APLIKASI ---
     async function loadDataAwal() {
         await Promise.all([loadBahanBaku(), loadSemuaResep()]);
         renderProdukTable();
@@ -180,8 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('page-kalkulator').classList.add('active');
         
         const jenisResepInput = document.getElementById('jenis-resep-input');
-        const hasilJadiContainer = document.getElementById('hasil-jadi-container');
-        
         jenisResepInput.value = resep.tipe_resep;
         jenisResepInput.disabled = true;
         jenisResepInput.dispatchEvent(new Event('change'));
@@ -362,6 +356,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function handleSimpanBahanCepat(e) {
+        e.preventDefault();
+        const form = e.target;
+        const { data: { user } } = await _supabase.auth.getUser();
+        if(!user) { alert("Sesi tidak valid"); return; }
+        
+        const newBahan = {
+            nama: document.getElementById('bahan-nama-cepat').value,
+            kategori: document.getElementById('bahan-kategori-cepat').value,
+            harga_beli_kemasan: document.getElementById('harga-beli-kemasan-cepat').value,
+            isi_kemasan: document.getElementById('isi-kemasan-cepat').value,
+            satuan_kemasan: document.getElementById('satuan-kemasan-cepat').value,
+            user_id: user.id
+        };
+
+        const { error } = await _supabase.from('bahan_baku').insert([newBahan]);
+        if (error) {
+            alert('Gagal simpan bahan baru: ' + error.message);
+        } else {
+            alert('Bahan baru berhasil disimpan!');
+            form.reset();
+            document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden');
+            await loadBahanBaku(); 
+            openPilihBahanModal(); 
+        }
+    }
+
     function resetKalkulator() {
         if(hppForm) hppForm.reset();
         document.getElementById('resep-table-body').innerHTML = '';
@@ -464,33 +485,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const cancelTambahCepatBtn = document.getElementById('cancel-tambah-cepat-btn');
         if (cancelTambahCepatBtn) { cancelTambahCepatBtn.addEventListener('click', () => document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden')); }
-
+        
         const masterBahanCepatForm = document.getElementById('master-bahan-cepat-form');
         if (masterBahanCepatForm) {
-            masterBahanCepatForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const { data: { user } } = await _supabase.auth.getUser();
-                if(!user) { alert("Sesi tidak valid"); return; }
-                const newBahan = {
-                    nama: document.getElementById('bahan-nama-cepat').value,
-                    kategori: document.getElementById('bahan-kategori-cepat').value,
-                    harga_beli_kemasan: document.getElementById('harga-beli-kemasan-cepat').value,
-                    isi_kemasan: document.getElementById('isi-kemasan-cepat').value,
-                    satuan_kemasan: document.getElementById('satuan-kemasan-cepat').value,
-                    user_id: user.id
-                };
-                const { error } = await _supabase.from('bahan_baku').insert([newBahan]);
-                if (error) {
-                    alert('Gagal simpan bahan baru: ' + error.message);
-                } else {
-                    alert('Bahan baru berhasil disimpan!');
-                    form.reset();
-                    document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden');
-                    await loadBahanBaku(); 
-                    openPilihBahanModal(); 
-                }
-            });
+            masterBahanCepatForm.addEventListener('submit', handleSimpanBahanCepat);
         }
 
         const bahanSourceTabs = document.querySelectorAll('.bahan-source-btn');
