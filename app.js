@@ -1,19 +1,21 @@
 // =================================================================
 // KODE MASTER v3.0 - 13 JULI 2025
-// ARSITEKTUR FINAL DENGAN TABEL 'RESEP' - TELAH DIUJI ULANG
+// ARSITEKTUR FINAL DENGAN SATU TABEL 'RESEP' - TELAH DIAUDIT TOTAL
 // =================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- BAGIAN 1: KONEKSI & VARIABEL GLOBAL ---
     const SUPABASE_URL = 'https://ubfbsmhyshosiihaewis.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // GANTI DENGAN KUNCI ASLI LOE
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZmJzbWh5c2hvc2lpaGFld2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NzEwNjEsImV4cCI6MjA2NzQ0NzA2MX0.6mSpqn-jeS4Ix-2ZhBXFygPzxrQMQhCDzxyOgG5L9ss'; // <- GANTI DENGAN KUNCI ASLI LOE
     const { createClient } = window.supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
     let masterBahanList = [];
     let semuaResepList = [];
     let isEditing = false;
     let editingResepId = null;
 
+    // --- BAGIAN 2: SELEKSI ELEMEN DOM ---
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const userEmailDisplay = document.getElementById('user-email-display');
@@ -26,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const hppForm = document.getElementById('hpp-form');
     const produkTableBody = document.getElementById('produk-table-body');
     const resetHppBtn = document.getElementById('reset-hpp-btn');
-
+    
+    // --- BAGIAN 3: FUNGSI OTENTIKASI & UI ---
     function setupUI(user) {
         if (user) {
             if (authContainer) authContainer.classList.add('hidden');
@@ -64,8 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = document.getElementById('signup-email').value;
                 const password = document.getElementById('signup-password').value;
                 const { error } = await _supabase.auth.signUp({ email, password });
-                if (error) { alert(`Daftar Gagal: ${error.message}`); } 
-                else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); }
+                if (error) { alert(`Daftar Gagal: ${error.message}`); } else { alert('Pendaftaran berhasil! Cek email untuk verifikasi.'); }
             });
         }
         if (logoutButton) {
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         _supabase.auth.onAuthStateChange((_event, session) => setupUI(session ? session.user : null));
     }
 
+    // --- BAGIAN 4: LOGIKA APLIKASI (ARSITEKTUR BARU) ---
     async function loadDataAwal() {
         await Promise.all([loadBahanBaku(), loadSemuaResep()]);
         renderProdukTable();
@@ -111,19 +114,23 @@ document.addEventListener('DOMContentLoaded', () => {
         else { semuaResepList = data || []; }
     }
 
-    function renderProdukTable() {
+    function renderProdukTable(tipeFilter = 'PRODUK JADI') {
         if (!produkTableBody) return;
-        const produkJadiList = semuaResepList.filter(r => r.tipe_resep === 'PRODUK JADI');
+        const filteredList = semuaResepList.filter(r => r.tipe_resep === tipeFilter);
         produkTableBody.innerHTML = '';
-        if (produkJadiList.length === 0) {
-            produkTableBody.innerHTML = '<tr><td colspan="5">Belum ada produk jadi yang disimpan.</td></tr>';
+        if (filteredList.length === 0) {
+            produkTableBody.innerHTML = `<tr><td colspan="5">Belum ada ${tipeFilter === 'PRODUK JADI' ? 'produk jadi' : 'bahan olahan'} yang disimpan.</td></tr>`;
             return;
         }
-        produkJadiList.forEach(resep => {
+        filteredList.forEach(resep => {
             const row = document.createElement('tr');
             row.dataset.id = resep.id;
             row.dataset.nama = resep.nama_resep;
-            row.innerHTML = `<td>${resep.nama_resep || 'N/A'}</td><td><span class="chip-kategori">Produk Jadi</span></td><td>${resep.kategori || 'N/A'}</td><td>${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(resep.harga_jual || 0)}</td><td><button class="button-edit">Lihat/Edit</button> <button class="button-delete">Hapus</button></td>`;
+            const tipeTeks = resep.tipe_resep === 'PRODUK JADI' ? 'Produk Jadi' : 'Bahan Olahan';
+            const hargaTampil = resep.tipe_resep === 'PRODUK JADI' 
+                ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(resep.harga_jual || 0)
+                : `-`;
+            row.innerHTML = `<td>${resep.nama_resep || 'N/A'}</td><td><span class="chip-kategori">${tipeTeks}</span></td><td>${resep.kategori || 'N/A'}</td><td>${hargaTampil}</td><td><button class="button-edit">Lihat/Edit</button> <button class="button-delete">Hapus</button></td>`;
             produkTableBody.appendChild(row);
         });
     }
@@ -158,12 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else {
                 alert('Resep berhasil dihapus.');
                 await loadSemuaResep();
-                renderProdukTable();
+                renderProdukTable(document.querySelector('.resep-filter-btn.active').dataset.tipe);
             }
         }
     }
     
-    async function loadProdukToKalkulator(resepId) {
+    async function loadResepToKalkulator(resepId) {
         const { data: resep, error } = await _supabase.from('resep').select('*').eq('id', resepId).single();
         if (error || !resep) { alert('Gagal mengambil detail resep!'); return; }
         
@@ -172,12 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         document.getElementById('page-kalkulator').classList.add('active');
         
-        const jenisProdukInput = document.getElementById('jenis-resep-input');
+        const jenisResepInput = document.getElementById('jenis-resep-input');
         const hasilJadiContainer = document.getElementById('hasil-jadi-container');
         
-        jenisProdukInput.value = resep.tipe_resep;
-        jenisProdukInput.disabled = true;
-        jenisProdukInput.dispatchEvent(new Event('change'));
+        jenisResepInput.value = resep.tipe_resep;
+        jenisResepInput.disabled = true;
+        jenisResepInput.dispatchEvent(new Event('change'));
 
         document.getElementById('resep-nama').value = resep.nama_resep;
         document.getElementById('resep-kategori').value = resep.kategori;
@@ -213,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!item) return 0;
         if (sourceType === 'bahan_baku') {
             return (item.harga_beli_kemasan && item.isi_kemasan > 0) ? (item.harga_beli_kemasan / item.isi_kemasan) : 0;
-        } else { // BAHAN OLAHAN
+        } else { // bahan_olahan
             return (item.total_hpp && item.hasil_jadi_jumlah > 0) ? item.total_hpp / item.hasil_jadi_jumlah : 0;
         }
     }
@@ -315,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('profit-percent-display').textContent = `${profitPercent.toFixed(2)}%`;
     }
 
-    async function handleSimpanProduk(e) {
+    async function handleSimpanResep(e) {
         e.preventDefault();
         const { data: { user } } = await _supabase.auth.getUser();
         if (!user) { alert("Sesi tidak valid."); return; }
@@ -517,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (hppForm) {
-            hppForm.addEventListener('submit', handleSimpanProduk);
+            hppForm.addEventListener('submit', handleSimpanResep);
         }
 
         if (produkTableBody) {
@@ -527,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const resepId = targetRow.dataset.id;
                 const namaResep = targetRow.dataset.nama;
                 if (e.target.classList.contains('button-edit')) {
-                    loadProdukToKalkulator(resepId);
+                    loadResepToKalkulator(resepId);
                 }
                 if (e.target.classList.contains('button-delete')) {
                     handleHapusProduk(resepId, namaResep);
