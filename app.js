@@ -368,6 +368,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function handleBuatDaftarBelanja() {
+        const resepRows = document.querySelectorAll('#resep-table-body tr');
+        if (resepRows.length === 0) {
+            alert('Tidak ada bahan di resep untuk dibuat daftar belanja.');
+            return;
+        }
+
+        const namaResep = document.getElementById('resep-nama').value || 'Tanpa Nama';
+        const namaDaftarBelanja = `Belanjaan untuk ${namaResep}`;
+
+        const itemBelanja = Array.from(resepRows)
+            .filter(row => row.dataset.source === 'bahan_baku') // Hanya ambil bahan baku
+            .map(row => {
+                const jumlah = row.querySelector('.resep-jumlah').value;
+                const bahanMaster = masterBahanList.find(b => b.id == row.dataset.bahanId);
+                const satuan = bahanMaster ? bahanMaster.satuan_kemasan : '';
+                return `${row.cells[0].textContent} (${jumlah} ${satuan})`;
+            });
+
+        if (itemBelanja.length === 0) {
+            alert('Resep ini tidak mengandung bahan baku mentah untuk dibuat daftar belanja.');
+            return;
+        }
+
+        const { data: { user } } = await _supabase.auth.getUser();
+        if (!user) { alert("Sesi tidak valid."); return; }
+
+        const { error } = await _supabase.from('daftar_belanja').insert([{
+            user_id: user.id,
+            nama_daftar: namaDaftarBelanja,
+            item_belanja: itemBelanja
+        }]);
+
+        if (error) {
+            alert('Gagal menyimpan daftar belanja: ' + error.message);
+        } else {
+            alert(`Daftar belanja "${namaDaftarBelanja}" berhasil disimpan! (Fitur untuk melihat daftar akan dibuat selanjutnya)`);
+        }
+    }
+    
     async function handleSimpanBahanCepat(e) {
         e.preventDefault();
         const form = e.target;
