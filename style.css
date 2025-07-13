@@ -13,6 +13,7 @@
     --danger-color: #dc3545;
     --warning-color: #ffc107;
     --success-color: #28a745;
+    --special-color: #6f42c1; /* Warna Ungu untuk Tombol Spesial */
     --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
@@ -29,7 +30,7 @@ body {
 h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
 h1 { font-size: 2.2rem; }
 h2 { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 20px; }
-h3 { font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+h3 { font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
 hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
 
 /* === HERO & AUTH SECTION === */
@@ -54,21 +55,27 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.4); }
+input:disabled { background-color: #e9ecef; cursor: not-allowed; }
+select:disabled { background-color: #e9ecef; cursor: not-allowed; }
 
 /* === BUTTON STYLING === */
 button { padding: 12px 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-button:hover { transform: translateY(-2px); }
+button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+button:active { transform: translateY(0); box-shadow: none; }
 button[type="submit"] { width: 100%; background-color: var(--primary-color); color: white; }
 button[type="submit"]:hover { background-color: var(--primary-hover); }
-.button-secondary { width: 100%; background-color: var(--text-secondary); color: white; }
+.button-secondary { background-color: var(--text-secondary); color: white; }
 .button-secondary:hover { background-color: #5a6268; }
+.button-special { background-color: var(--special-color); color: white; }
+.button-special:hover { background-color: #5a189a; }
 
 /* === APP LAYOUT === */
 .hidden { display: none !important; }
 .app-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
 .app-title { margin: 0; }
 .user-menu { display: flex; align-items: center; gap: 15px; }
-#logout-button { width: auto; padding: 8px 15px; }
+#logout-button { width: auto; padding: 8px 15px; background-color: #e9ecef; color: var(--text-secondary); }
+#logout-button:hover { background-color: #ced4da; color: var(--text-color); }
 
 /* === NAVIGASI UTAMA === */
 .main-nav { display: flex; gap: 8px; margin-bottom: 25px; background-color: #e9ecef; padding: 6px; border-radius: 10px; overflow-x: auto; }
@@ -78,7 +85,8 @@ button[type="submit"]:hover { background-color: var(--primary-hover); }
 
 /* === KONTEN HALAMAN (PAGE) === */
 .page { display: none; }
-.page.active { display: block; }
+.page.active { display: block; animation: fadeIn 0.5s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .section { background-color: var(--surface-color); padding: 25px; border-radius: 12px; border: 1px solid #e9ecef; box-shadow: var(--shadow); margin-bottom: 25px; }
 
 /* === TABLE STYLING === */
@@ -91,11 +99,11 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
 .button-edit, .edit-btn { background-color: var(--warning-color); color: var(--text-color); }
 
 /* === KATEGORI & FILTER STYLING === */
-.table-controls { margin-top: 25px; margin-bottom: 15px; }
+.table-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;}
 .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.filter-btn { padding: 8px 16px; border: 1px solid var(--border-color); background-color: transparent; color: var(--text-secondary); border-radius: 20px; cursor: pointer; font-weight: 500; transition: all 0.2s; width: auto; }
-.filter-btn:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-.filter-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 2px 5px rgba(20, 184, 166, 0.3); }
+.filter-btn, .resep-filter-btn { padding: 8px 16px; border: 1px solid var(--border-color); background-color: transparent; color: var(--text-secondary); border-radius: 20px; cursor: pointer; font-weight: 500; transition: all 0.2s; width: auto; }
+.filter-btn:hover, .resep-filter-btn:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+.filter-btn.active, .resep-filter-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 2px 5px rgba(20, 184, 166, 0.3); }
 .chip-kategori { display: inline-block; padding: 3px 10px; font-size: 0.75rem; font-weight: 500; background-color: #e9ecef; color: var(--text-secondary); border-radius: 12px; }
 
 /* === KALKULATOR HPP STYLING === */
@@ -103,9 +111,11 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
 .hpp-summary { background-color: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; }
 .hpp-summary h3 { margin: 0; font-size: 1.2rem; }
 .hpp-summary p { margin: 5px 0 0; color: var(--text-secondary); }
+.saran-harga { color: var(--success-color); }
 .form-actions { display: flex; gap: 10px; margin-top: 20px; }
 .form-actions button { flex: 1; }
 #hpp-form button[type="submit"] { background-color: var(--success-color); }
+#saran-harga-wrapper label { margin-top: 15px; }
 
 /* === MODAL STYLING === */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
@@ -144,7 +154,7 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
     z-index: 1;
     bottom: 140%;
     left: 50%;
-    margin-left: -125px; /* Geser ke kiri setengah dari lebarnya */
+    margin-left: -125px;
     opacity: 0;
     transition: opacity 0.3s;
     font-weight: normal;
@@ -171,15 +181,4 @@ td button { font-size: 12px; padding: 6px 10px; margin-right: 5px; width: auto; 
 @media (min-width: 768px) {
     .app-header { flex-wrap: nowrap; }
     .nav-button { flex: 0 1 auto; padding: 12px 20px; }
-}
-.table-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#download-all-resep-btn {
-    width: auto;
-    padding: 8px 16px;
-    background-color: var(--success-color);
 }
