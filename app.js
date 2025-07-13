@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const hargaTampil = resep.tipe_resep === 'PRODUK JADI' 
                 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(resep.harga_jual || 0)
                 : `-`;
-            row.innerHTML = `<td>${resep.nama_resep || 'N/A'}</td><td><span class="chip-kategori">${tipeTeks}</span></td><td>${resep.kategori || 'N/A'}</td><td>${hargaTampil}</td><td><button class="button-edit">Lihat/Edit</button> <button class="button-delete">Hapus</button></td>`;
+            row.innerHTML = `<td>${resep.nama_resep || 'N/A'}</td><td><span class="chip-kategori">${tipeTeks}</span></td><td>${resep.kategori || 'N/A'}</td><td>${hargaTampil}</td><td><button class="button-edit">Lihat/Edit</button> <button class="button-download">Download</button> <button class="button-delete">Hapus</button></td>`;
             produkTableBody.appendChild(row);
         });
     }
