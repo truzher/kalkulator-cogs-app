@@ -1,6 +1,6 @@
 // =================================================================
-// KODE MASTER v3.6 - 13 JULI 2025
-// PENAMBAHAN FITUR DAFTAR BELANJA
+// KODE MASTER v3.7 - 13 JULI 2025
+// PERBAIKAN FUNGSI initAuth() YANG HILANG
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -407,13 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
     function setupAppEventListeners() {
-    console.log("--- Memulai Pemasangan Semua Event Listener (DEBUG MODE) ---");
-
-    try {
-        // === Listener CRUD Master Bahan ===
-        const masterBahanForm = document.getElementById('master-bahan-form');
         if (masterBahanForm) {
-            console.log("✅ Memasang listener: masterBahanForm");
             masterBahanForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const { data: { user } } = await _supabase.auth.getUser();
@@ -434,11 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadBahanBaku();
                 }
             });
-        } else { console.error("❌ Elemen TIDAK DITEMUKAN: #master-bahan-form"); }
-
-        const editBahanForm = document.getElementById('edit-bahan-form');
+        }
         if (editBahanForm) {
-            console.log("✅ Memasang listener: editBahanForm");
             editBahanForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const id = document.getElementById('edit-bahan-id').value;
@@ -453,15 +444,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) { alert('Gagal update bahan: ' + error.message); } 
                 else {
                     alert('Bahan berhasil diupdate!');
-                    document.getElementById('edit-modal').classList.add('hidden');
+                    if(editModal) editModal.classList.add('hidden');
                     loadBahanBaku();
                 }
             });
-        } else { console.error("❌ Elemen TIDAK DITEMUKAN: #edit-bahan-form"); }
-        
-        const masterBahanTableBody = document.getElementById('master-bahan-table-body');
+        }
         if (masterBahanTableBody) {
-            console.log("✅ Memasang listener: masterBahanTableBody");
             masterBahanTableBody.addEventListener('click', (e) => {
                 const targetRow = e.target.closest('tr');
                 if (!targetRow || !targetRow.dataset.id) return;
@@ -469,57 +457,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.classList.contains('edit-btn')) { populateEditForm(id); }
                 if (e.target.classList.contains('delete-btn')) { handleHapusBahan(id); }
             });
-        } else { console.error("❌ Elemen TIDAK DITEMUKAN: #master-bahan-table-body"); }
-
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        if (cancelEditBtn) {
-            console.log("✅ Memasang listener: cancelEditBtn");
-            cancelEditBtn.addEventListener('click', () => document.getElementById('edit-modal').classList.add('hidden'));
         }
+        if (cancelEditBtn) { cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden')); }
 
-        // === Listener Navigasi & Filter Halaman ===
         const navButtons = document.querySelectorAll('.nav-button');
-        if (navButtons.length > 0) {
-            console.log("✅ Memasang listener: navButtons");
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-                    button.classList.add('active');
-                    document.getElementById(button.dataset.page).classList.add('active');
-                    if(button.dataset.page === 'page-kalkulator'){ resetKalkulator(); }
-                });
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(button.dataset.page).classList.add('active');
+                if(button.dataset.page === 'page-kalkulator'){ resetKalkulator(); }
             });
-        } else { console.error("❌ Elemen .nav-button TIDAK DITEMUKAN"); }
+        });
 
         const filterButtons = document.querySelectorAll('.filter-btn');
-        if (filterButtons.length > 0) {
-            console.log("✅ Memasang listener: filterButtons");
-            filterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    loadBahanBaku(button.dataset.kategori);
-                });
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                loadBahanBaku(button.dataset.kategori);
             });
-        } else { console.error("❌ Elemen .filter-btn TIDAK DITEMUKAN"); }
+        });
         
-        // === Listener Halaman Kalkulator & Semua Modal ===
         const addResepItemBtn = document.getElementById('add-resep-item-btn');
-        if (addResepItemBtn) {
-            console.log("✅ Memasang listener: addResepItemBtn");
-            addResepItemBtn.addEventListener('click', openPilihBahanModal);
-        } else { console.error("❌ Elemen #add-resep-item-btn TIDAK DITEMUKAN"); }
+        if (addResepItemBtn) { addResepItemBtn.addEventListener('click', openPilihBahanModal); }
         
         const cancelPilihBahanBtn = document.getElementById('cancel-pilih-bahan-btn');
-        if (cancelPilihBahanBtn) {
-            console.log("✅ Memasang listener: cancelPilihBahanBtn");
-            cancelPilihBahanBtn.addEventListener('click', () => document.getElementById('pilih-bahan-modal').classList.add('hidden'));
-        }
+        if (cancelPilihBahanBtn) { cancelPilihBahanBtn.addEventListener('click', () => document.getElementById('pilih-bahan-modal').classList.add('hidden')); }
 
         const buatBahanBaruCepatBtn = document.getElementById('buat-bahan-baru-cepat-btn');
         if (buatBahanBaruCepatBtn) {
-            console.log("✅ Memasang listener: buatBahanBaruCepatBtn");
             buatBahanBaruCepatBtn.addEventListener('click', () => {
                 document.getElementById('pilih-bahan-modal').classList.add('hidden');
                 document.getElementById('tambah-bahan-cepat-modal').classList.remove('hidden');
@@ -527,33 +495,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const cancelTambahCepatBtn = document.getElementById('cancel-tambah-cepat-btn');
-        if (cancelTambahCepatBtn) {
-            console.log("✅ Memasang listener: cancelTambahCepatBtn");
-            cancelTambahCepatBtn.addEventListener('click', () => document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden'));
-        }
+        if (cancelTambahCepatBtn) { cancelTambahCepatBtn.addEventListener('click', () => document.getElementById('tambah-bahan-cepat-modal').classList.add('hidden')); }
         
         const masterBahanCepatForm = document.getElementById('master-bahan-cepat-form');
         if (masterBahanCepatForm) {
-            console.log("✅ Memasang listener: masterBahanCepatForm");
             masterBahanCepatForm.addEventListener('submit', handleSimpanBahanCepat);
         }
 
         const bahanSourceTabs = document.querySelectorAll('.bahan-source-btn');
-        if(bahanSourceTabs.length > 0) {
-            console.log("✅ Memasang listener: bahanSourceTabs");
-            bahanSourceTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    bahanSourceTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    const source = tab.dataset.source;
-                    renderPilihBahanList(source);
-                });
+        bahanSourceTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                bahanSourceTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const source = tab.dataset.source;
+                renderPilihBahanList(source);
             });
-        }
+        });
 
         const searchInput = document.getElementById('search-bahan-input');
         if(searchInput) {
-            console.log("✅ Memasang listener: searchInput");
             searchInput.addEventListener('input', () => {
                 const currentSource = document.querySelector('.bahan-source-btn.active').dataset.source;
                 renderPilihBahanList(currentSource);
@@ -562,7 +522,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const searchResultsContainer = document.getElementById('bahan-search-results');
         if(searchResultsContainer) {
-            console.log("✅ Memasang listener: searchResultsContainer");
             searchResultsContainer.addEventListener('click', (e) => {
                 if(e.target && e.target.matches('li.search-result-item')) {
                     tambahBahanKeResep(e.target.dataset);
@@ -572,7 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const resepTableBody = document.getElementById('resep-table-body');
         if(resepTableBody) {
-            console.log("✅ Memasang listener: resepTableBody");
             resepTableBody.addEventListener('click', (e) => {
                 if (e.target && e.target.classList.contains('resep-delete-btn')) {
                     e.target.closest('tr').remove();
@@ -597,21 +555,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const kalkulasiInputs = ['overhead-cost', 'overhead-type', 'labor-cost', 'error-cost-percent', 'target-margin-percent', 'harga-jual-aktual'];
-        console.log("✅ Memasang listener untuk: Input Kalkulasi");
         kalkulasiInputs.forEach(id => {
             const element = document.getElementById(id);
             if(element) { element.addEventListener('input', kalkulasiFinal); }
         });
 
-        const hppForm = document.getElementById('hpp-form');
         if (hppForm) {
-            console.log("✅ Memasang listener: hppForm (Simpan Resep)");
             hppForm.addEventListener('submit', handleSimpanResep);
         }
 
         const resepFilterButtons = document.querySelectorAll('.resep-filter-btn');
-        if (resepFilterButtons.length > 0) {
-            console.log("✅ Memasang listener: resepFilterButtons");
+        if (resepFilterButtons) {
             resepFilterButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     resepFilterButtons.forEach(btn => btn.classList.remove('active'));
@@ -621,9 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const produkTableBody = document.getElementById('produk-table-body');
         if (produkTableBody) {
-            console.log("✅ Memasang listener: produkTableBody (Edit/Delete Resep)");
             produkTableBody.addEventListener('click', (e) => {
                 const targetRow = e.target.closest('tr');
                 if (!targetRow || !targetRow.dataset.id) return;
@@ -638,16 +590,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const resetHppBtn = document.getElementById('reset-hpp-btn');
         if(resetHppBtn) {
-            console.log("✅ Memasang listener: resetHppBtn");
             resetHppBtn.addEventListener('click', resetKalkulator);
         }
         
         const jenisResepInput = document.getElementById('jenis-resep-input');
         const hasilJadiContainer = document.getElementById('hasil-jadi-container');
         if(jenisResepInput && hasilJadiContainer){
-            console.log("✅ Memasang listener: jenisResepInput (Yield)");
             jenisResepInput.addEventListener('change', () => {
                 if(jenisResepInput.value === 'BAHAN OLAHAN'){
                     hasilJadiContainer.classList.remove('hidden');
@@ -656,12 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        
-        console.log("--- Semua Pemasangan Event Listener Selesai ---");
-    } catch (error) {
-        console.error("FATAL ERROR di dalam setupAppEventListeners:", error);
     }
-}
     
     // --- BAGIAN 6: JALANKAN APLIKASI ---
     initAuth();
