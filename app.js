@@ -680,6 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.classList.contains('button-edit')) {
                     loadResepToKalkulator(resepId);
                 }
+                if (e.target.classList.contains('button-download')) {
+                    handleDownloadResep(resepId);
+                }
                 if (e.target.classList.contains('button-delete')) {
                     handleHapusProduk(resepId, namaResep);
                 }
