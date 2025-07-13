@@ -445,6 +445,56 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('hasil-jadi-container').classList.add('hidden');
         kalkulasiFinal();
     }
+
+    function handleDownloadResep(resepId) {
+    const resep = semuaResepList.find(r => r.id == resepId);
+    if (!resep) {
+        alert("Resep tidak ditemukan!");
+        return;
+    }
+
+    // 1. Siapkan data untuk Sheet "Ringkasan"
+    const ringkasanData = [
+        ["Nama Resep", resep.nama_resep],
+        ["Tipe Resep", resep.tipe_resep],
+        ["Kategori", resep.kategori],
+        ["Total HPP", resep.total_hpp],
+        ["Harga Jual", resep.harga_jual || "-"],
+        ["", ""], // Baris kosong sebagai pemisah
+        ["DETAIL BAHAN", "JUMLAH", "SUMBER", "BIAYA"],
+    ];
+
+    // 2. Siapkan data untuk Sheet "Detail Bahan"
+    const detailBahanData = resep.resep_json.map(item => {
+        const bahanMaster = item.source === 'bahan_baku' 
+            ? masterBahanList.find(b => b.id == item.bahan_id)
+            : semuaResepList.find(r => r.id == item.bahan_id);
+        
+        const satuan = item.source === 'bahan_baku' 
+            ? (bahanMaster ? bahanMaster.satuan_kemasan : '') 
+            : (bahanMaster ? bahanMaster.hasil_jadi_satuan : '');
+            
+        return [
+            item.nama_bahan,
+            `${item.jumlah} ${satuan || ''}`,
+            item.source.replace('_', ' '),
+            item.biaya
+        ];
+    });
+
+    const dataFinal = ringkasanData.concat(detailBahanData);
+
+    // 3. Buat Worksheet dan Workbook menggunakan SheetJS
+    const worksheet = XLSX.utils.aoa_to_sheet(dataFinal);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Resep");
+    
+    // Atur lebar kolom agar lebih rapi
+    worksheet["!cols"] = [{wch:30}, {wch:15}, {wch:15}, {wch:20}];
+
+    // 4. Trigger download file Excel
+    XLSX.writeFile(workbook, `Resep - ${resep.nama_resep}.xlsx`);
+}
     
     // BAGIAN 5: PEMASANGAN SEMUA EVENT LISTENER
     function setupAppEventListeners() {
